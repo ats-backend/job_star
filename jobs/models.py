@@ -11,9 +11,9 @@ class Job(models.Model):
     description = models.TextField()
     responsibilities = models.TextField()
     requirement = models.TextField()
-    experience = models.CharField(max_length=250)
     date_posted = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField()
+    modified_date = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
