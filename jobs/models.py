@@ -7,7 +7,7 @@ from django.utils.text import slugify
 
 class Job(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField()
+    slug = models.SlugField(null=True, blank=True)
     description = models.TextField()
     responsibilities = models.TextField()
     requirement = models.TextField()
