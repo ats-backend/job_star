@@ -122,26 +122,30 @@ class SetRejectedApplicationAPIView(UpdateAPIView):
         }, status=status.HTTP_200_OK)
 
 
-class PendingApplicationListView(ListAPIView):
+class PendingApplicationListAPIView(ListAPIView):
     queryset = Application.objects.filter(status='pending')
     serializer_class = ApplicationSerializer
 
 
-class ShortlistedApplicationListView(ListAPIView):
+class ShortlistedApplicationListAPIView(ListAPIView):
     queryset = Application.objects.filter(status='shortlisted')
     serializer_class = ApplicationSerializer
 
 
-class InvitedApplicationListView(ListAPIView):
+class InvitedApplicationListAPIView(ListAPIView):
     queryset = Application.objects.filter(status='invited')
     serializer_class = ApplicationSerializer
 
 
-class AcceptedApplicationListView(ListAPIView):
+class AcceptedApplicationListAPIView(ListAPIView):
     queryset = Application.objects.filter(status='accepted')
     serializer_class = ApplicationSerializer
 
 
-class RejectedApplicationListView(ListAPIView):
+class RejectedApplicationListAPIView(ListAPIView):
     queryset = Application.objects.filter(status='rejected')
     serializer_class = ApplicationSerializer
+
+
+class TrackApplicationAPIView(GenericAPIView):
+    pass
