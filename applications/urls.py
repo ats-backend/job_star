@@ -6,7 +6,8 @@ from .views import (
     InvitedApplicationListAPIView, PendingApplicationListAPIView,
     RejectedApplicationListAPIView, SetAcceptedApplicationAPIView,
     SetInvitedApplicationAPIView, SetRejectedApplicationAPIView,
-    SetShortlistedApplicationAPIView, ShortlistedApplicationListAPIView
+    TrackApplicationAPIView, SetShortlistedApplicationAPIView,
+    ShortlistedApplicationListAPIView
 )
 
 app_name = 'applications'
@@ -26,5 +27,6 @@ urlpatterns = [
     path('applications/<int:pk>/set-invited', SetInvitedApplicationAPIView.as_view(), name='invite'),
     path('applications/<int:pk>/set-shortlisted', SetShortlistedApplicationAPIView.as_view(), name='shortlist'),
     path('applications/<int:pk>/set-rejected', SetRejectedApplicationAPIView.as_view(), name='reject'),
+    path('applications/track', TrackApplicationAPIView.as_view(), name='track'),
 
 ]

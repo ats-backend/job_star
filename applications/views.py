@@ -12,9 +12,19 @@ from rest_framework.response import Response
 
 from jobs.models import Job
 from .models import Applicant, Application
-from .serializers import ApplicantSerializer, ApplicationDetailSerializer, ApplicationSerializer
+from .serializers import (
+    ApplicantSerializer, ApplicationDetailSerializer,
+    ApplicationSerializer, TrackApplicationSerializer
+)
 
 # Create your views here.
+
+
+class ObjectMixin:
+
+    def get_object(self):
+        obj = self.queryset.filter(id=self.kwargs['pk']).first()
+        return obj
 
 
 class ApplicationListAPIView(ListAPIView):
@@ -74,52 +84,76 @@ class ApplicantDetailAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
 
-class SetShortlistedApplicationAPIView(GenericAPIView):
+class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
-        application.status = 'shortlisted'
+        if application:
+            application.status = 'shortlisted'
+            application.save()
+            return Response({
+                'success': True,
+                'application_status': application.status
+            }, status=status.HTTP_200_OK)
         return Response({
-            'success': True,
-            'application_status': application.status
-        }, status=status.HTTP_200_OK)
+            'success': False,
+            'error': "No such application exists!"
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
-class SetInvitedApplicationAPIView(GenericAPIView):
+class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
-        application.status = 'invited'
+        if application:
+            application.status = 'invited'
+            application.save()
+            return Response({
+                'success': True,
+                'application_status': application.status
+            }, status=status.HTTP_200_OK)
         return Response({
-            'success': True,
-            'application_status': application.status
-        }, status=status.HTTP_200_OK)
+            'success': False,
+            'error': "No such application exists!"
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
-class SetAcceptedApplicationAPIView(GenericAPIView):
+class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
-        application.status = 'accepted'
+        if application:
+            application.status = 'accepted'
+            application.save()
+            return Response({
+                'success': True,
+                'application_status': application.status
+            }, status=status.HTTP_200_OK)
         return Response({
-            'success': True,
-            'application_status': application.status
-        }, status=status.HTTP_200_OK)
+            'success': False,
+            'error': "No such application exists!"
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
-class SetRejectedApplicationAPIView(UpdateAPIView):
+class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
-        application.status = 'rejected'
+        if application:
+            application.status = 'rejected'
+            application.save()
+            return Response({
+                'success': True,
+                'application_status': application.status
+            }, status=status.HTTP_200_OK)
         return Response({
-            'success': True,
-            'application_status': application.status
-        }, status=status.HTTP_200_OK)
+            'success': False,
+            'error': "No such application exists!"
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
 class PendingApplicationListAPIView(ListAPIView):
@@ -148,4 +182,24 @@ class RejectedApplicationListAPIView(ListAPIView):
 
 
 class TrackApplicationAPIView(GenericAPIView):
-    pass
+
+    def post(self, request, *args, **kwargs):
+        serializer = TrackApplicationSerializer(data=request.data)
+        if serializer.is_valid():
+            application_id = serializer.data['application_id']
+            application = Application.objects.filter(
+                application_id=application_id
+            ).first()
+            if application:
+                return Response({
+                    'success': True,
+                    'application_status': application.status,
+                })
+            return Response({
+                'success': False,
+                'error': "No such application exists!"
+            }, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'success': False,
+            'error': serializer.errors
+        })

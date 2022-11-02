@@ -1,7 +1,6 @@
 from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
-from drf_extra_fields.fields import Base64FileField
 
 from .models import Applicant, Application
 
@@ -20,7 +19,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ('applicant', 'specification', 'applicant_name', 'status',)
+        fields = ('applicant', 'applicant_name', 'application_id', 'specification', 'status',)
 
     def create(self, validated_data):
         applicant_data = validated_data.pop('applicant')
@@ -52,11 +51,5 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         return application
 
 
-# APPLICATION_STATUS = (
-#         ('pending', 'Pending'),
-#         ('shortlisted', 'Shortlisted'),
-#         ('passed', 'Passed Assessment'),
-#         ('invited', 'Invited for Interview'),
-#         ('accepted', 'Accepted'),
-#         ('rejected', 'Rejected'),
-#     )
+class TrackApplicationSerializer(serializers.Serializer):
+    application_id = serializers.CharField()
