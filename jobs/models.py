@@ -14,6 +14,7 @@ class Job(models.Model):
     experience = models.CharField(max_length=250)
     date_posted = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-date_posted',)
