@@ -51,11 +51,5 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         return application
 
 
-# APPLICATION_STATUS = (
-#         ('pending', 'Pending'),
-#         ('shortlisted', 'Shortlisted'),
-#         ('passed', 'Passed Assessment'),
-#         ('invited', 'Invited for Interview'),
-#         ('accepted', 'Accepted'),
-#         ('rejected', 'Rejected'),
-#     )
+class TrackApplicationSerializer(serializers.Serializer):
+    application_id = serializers.CharField()
