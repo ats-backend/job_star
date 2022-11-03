@@ -11,16 +11,19 @@ class Log(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     @staticmethod
-    def info(actor, event, message):
-        log = Log.objects.create(actor='Admin', event=event, level='info', message=message)
+    def info(event, message):
+        log = Log.objects.create(actor='Admin', event=event,
+                                 level='info', message=message)
         return log
 
     @staticmethod
-    def warning(actor, event, message):
-        log = Log.objects.create(actor=actor, event=event, level='info', message=message)
+    def warning(event, message):
+        log = Log.objects.create(actor='Admin', event=event,
+                                 level='info', message=message)
         return log
 
     @staticmethod
-    def error(actor, event, message):
-        log = Log.objects.create(actor=actor, event=event, level='info', message=message)
+    def error(event, message):
+        log = Log.objects.create(actor='Admin', event=event,
+                                 level='info', message=message)
         return log
