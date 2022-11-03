@@ -6,7 +6,6 @@ from rest_framework.generics import ListAPIView
 from .serializers import LogSerializer
 from .models import Log
 
-messages.info()
 
 class LogListAPIView(ListAPIView):
     serializer_class = LogSerializer
