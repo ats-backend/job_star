@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'applications',
     'jobs',
+    'logs',
     'rest_framework'
 ]
 
@@ -88,8 +89,6 @@ WSGI_APPLICATION = 'job_star.wsgi.application'
 # }
 
 load_dotenv()
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -126,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 

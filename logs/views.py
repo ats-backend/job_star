@@ -1,3 +1,13 @@
 from django.shortcuts import render
+from django.contrib import messages
 
-# Create your views here.
+from rest_framework.generics import ListAPIView
+
+from .serializers import LogSerializer
+from .models import Log
+
+messages.info()
+
+class LogListAPIView(ListAPIView):
+    serializer_class = LogSerializer
+    queryset = Log.objects.all()
