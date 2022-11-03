@@ -1,7 +1,6 @@
 from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
-from drf_extra_fields.fields import Base64lFileField
 
 from .models import Applicant, Application
 
