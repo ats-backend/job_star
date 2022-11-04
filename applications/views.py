@@ -1,6 +1,7 @@
 import base64
 import hashlib
 
+from decouple import config
 from django.shortcuts import render
 from rest_framework import status
 
@@ -12,6 +13,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from jobs.models import Job
+from permissions.permissions import IsAuthenticated
 from .models import Applicant, Application
 from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
@@ -199,6 +201,7 @@ class RejectedApplicationListAPIView(ListAPIView):
 
 class TrackApplicationAPIView(GenericAPIView):
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         serializer = TrackApplicationSerializer(data=request.data)
