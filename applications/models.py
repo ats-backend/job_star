@@ -67,6 +67,9 @@ class Application(models.Model):
     def applicant_name(self):
         return f'{self.applicant.first_name} {self.applicant.last_name}'
 
+    def applicant_email(self):
+        return self.applicant.email
+
     # def job_deadline(s1
 
 
@@ -79,6 +82,7 @@ def set_application_id(sender, instance, created, **kwargs):
         last_name_id = instance.applicant.last_name[0]
         spec_id_1 = specification[0][0]
         spec_id_2 = specification[1][0]
-        application_id = f"{first_name_id}{last_name_id}-{spec_id_1}{spec_id_2}-{id2string}"
+        application_id = f"{first_name_id}{last_name_id}-" \
+                         f"{spec_id_1}{spec_id_2}-{id2string}"
         instance.application_id = application_id
         instance.save()

@@ -19,7 +19,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ('applicant', 'specification', 'applicant_name', 'status',)
+        fields = ('applicant', 'specification', 'applicant_name', 'applicant_email', 'status',)
 
     def create(self, validated_data):
         applicant_data = validated_data.pop('applicant')
