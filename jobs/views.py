@@ -1,5 +1,5 @@
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, Http404
-from django.contrib import messages
 
 from rest_framework.generics import (GenericAPIView)
 from rest_framework.views import APIView
@@ -7,15 +7,20 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Job
-from .serializers import JobSerializers
-from logs.models import Log
+from .serializers import JobSerializers, JobListSerializers
 
 
 class JobListCreateAPIView(APIView):
 
-    def get(self, request):
-        jobs = Job.objects.filter(is_deleted=False).all()
-        serializer = JobSerializers(jobs, many=True)
+    today = timezone.now()
+
+    def get(self, request, *args, **kwargs):
+        active_jobs = Job.objects.filter(
+            is_deleted=False,
+            deadline__gt=self.today
+            ).all()
+        serializer = JobListSerializers(active_jobs, many=True)
+        print(request.META)
         return Response(serializer.data)
 
     def post(self, request):
@@ -23,6 +28,7 @@ class JobListCreateAPIView(APIView):
         if serializer.is_valid():
             # serializer.save(commit=False)
             # Log.info(event=serializer)
+            serializer.save()
             print(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
