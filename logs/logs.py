@@ -15,15 +15,15 @@ def log_writter():
             level=logging.DEBUG,
             format="%(asctime)s %(message)s"
         )
-        print(logging)
-        logging.DEBUG('dfghj')
-        return logging
-    elif logging.info:
-        logging.basicConfig(
-            filename="log.txt",
-            level=logging.DEBUG,
-            format="%(asctime)s %(message)s"
-        )
-        print(logging)
-        return logging.info("The program is working as expected")
+#         print(logging)
+#         logging.DEBUG('dfghj')
+#         return logging
+#     elif logging.info:
+#         logging.basicConfig(
+#             filename="log.txt",
+#             level=logging.DEBUG,
+#             format="%(asctime)s %(message)s"
+#         )
+#         print(logging)
+#         return logging.info("The program is working as expected")
 
