@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import json
 
 from decouple import config
 from django.shortcuts import render
@@ -12,12 +13,13 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from job_star.encryption import encrypt_data, decrypt_data
 from jobs.models import Job
 from permissions.permissions import IsAuthenticated
-from .models import Applicant, Application
+from .models import Applicant, Application, ApplicationStatus
 from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
-    ApplicationSerializer, TrackApplicationSerializer
+    ApplicationSerializer, TrackApplicationSerializer, ApplicationStatusSerializer
 )
 from renderers.renderers import CustomRender
 
@@ -27,7 +29,7 @@ from renderers.renderers import CustomRender
 class ObjectMixin:
 
     def get_object(self):
-        obj = self.queryset.filter(id=self.kwargs['pk']).first()
+        obj = self.queryset.filter(application_id==self.kwargs['pk']).first()
         return obj
 
 
@@ -35,15 +37,23 @@ class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CreateApplicationAPIView(CreateAPIView):
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         job = Job.objects.filter(id=kwargs['job_id']).first()
-        applicant_email = request.data.get('applicant').get('email')
+        try:
+            applicant_email = request.data.get('applicant').get('email')
+        except:
+            return Response(
+                data="No applicant details provided or invalid key",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if job:
             application = Application.objects.filter(
                     job__deadline=job.deadline,
@@ -61,7 +71,6 @@ class CreateApplicationAPIView(CreateAPIView):
                 data = {
                     'job': str(application.job),
                     'applicant': str(application.applicant),
-                    'specification': application.specification,
                     'status': application.status
                 }
                 return Response(
@@ -78,24 +87,28 @@ class ApplicationDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicationDetailSerializer
     queryset = Application.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class ApplicantListAPIView(ListAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class ApplicantDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
 
 class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
@@ -115,6 +128,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
 class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
@@ -134,6 +148,7 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
 class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
@@ -152,7 +167,9 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
+    ApplicationStatus.objects.filter()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
         application = self.get_object()
@@ -170,33 +187,48 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 
 class PendingApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(status='pending')
+    queryset = Application.objects.filter(
+        application_status__status='pending'
+    )
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(status='shortlisted')
+    queryset = Application.objects.filter(
+        application_status__status='shortlisted'
+    )
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class InvitedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(status='invited')
+    queryset = Application.objects.filter(
+        application_status__status='invited'
+    )
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class AcceptedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(status='accepted')
+    queryset = Application.objects.filter(
+        application_status__status='accepted'
+    )
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class RejectedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(status='rejected')
+    queryset = Application.objects.filter(
+        application_status__status='rejected'
+    )
     serializer_class = ApplicationSerializer
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class TrackApplicationAPIView(GenericAPIView):
@@ -204,15 +236,27 @@ class TrackApplicationAPIView(GenericAPIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        serializer = TrackApplicationSerializer(data=request.data)
+        decrypted_data = decrypt_data(request.data)
+        serializer = TrackApplicationSerializer(data=decrypted_data)
         if serializer.is_valid():
             application_id = serializer.data['application_id']
             application = Application.objects.filter(
                 application_id=application_id
             ).first()
             if application:
+                # application_status = json.dumps(list(application.application_status.all()))
+                application_status = ApplicationStatusSerializer(
+                    data=application.application_status.all(),
+                    many=True
+                )
+                data = {
+                    'applicant_name': application.applicant.fullname(),
+                    'application_id': application.application_id,
+                    'application_status': application_status.initial_data
+                }
                 return Response(
-                    data={'application_status': application.status},
+                    # data=encrypt_data(data=data),
+                    data=data,
                     status=status.HTTP_200_OK
                 )
             return Response(

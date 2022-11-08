@@ -2,7 +2,7 @@ from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
 
-from .models import Applicant, Application
+from .models import Applicant, Application, ApplicationStatus
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
@@ -13,13 +13,18 @@ class ApplicantSerializer(serializers.ModelSerializer):
         model = Applicant
         exclude = ('id',)
 
+
 class ApplicationSerializer(serializers.ModelSerializer):
     applicant = ApplicantSerializer(write_only=True)
 
-
     class Meta:
         model = Application
-        fields = ('applicant', 'specification', 'applicant_name', 'applicant_email', 'status',)
+        fields = (
+            'applicant',
+            'applicant_name',
+            'applicant_email',
+            'status',
+        )
 
     def create(self, validated_data):
         applicant_data = validated_data.pop('applicant')
@@ -27,6 +32,11 @@ class ApplicationSerializer(serializers.ModelSerializer):
         application = Application.objects.create(
             applicant=applicant,
             **validated_data
+        )
+        application_status = ApplicationStatus.objects.create(
+            application=application,
+            activity="Completed Application",
+            details="You have completed your application and will receive a mail when there is an update"
         )
         # print(application)
         return application
@@ -37,7 +47,12 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ('applicant', 'specification', 'applicant_name', 'status',)
+        fields = (
+            'applicant',
+            'specification',
+            'applicant_name',
+            'status',
+        )
 
     def create(self, validated_data):
         print("Got called")
@@ -53,3 +68,15 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 
 class TrackApplicationSerializer(serializers.Serializer):
     application_id = serializers.CharField()
+
+
+class ApplicationStatusSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ApplicationStatus
+        fields = (
+            'status',
+            'activity',
+            'details',
+            'timestamp',
+        )

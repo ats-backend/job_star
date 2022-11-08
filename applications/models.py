@@ -43,18 +43,20 @@ class Applicant(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
+    def fullname(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 class Application(models.Model):
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
+    job = models.ForeignKey(
+        Job,
+        on_delete=models.CASCADE,
+        related_name='applications'
+    )
     application_id = models.CharField(max_length=20, null=True, blank=True)
     applicant = models.ForeignKey(
         Applicant, on_delete=models.CASCADE,
         related_name='applications'
-    )
-    specification = models.CharField(max_length=50)
-    status = models.CharField(
-        max_length=11,
-        default='pending',
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -70,19 +72,45 @@ class Application(models.Model):
     def applicant_email(self):
         return self.applicant.email
 
+    def status(self):
+        # if self.application_status.first():
+        return self.application_status.first().status
+        # return None
+
+    def program(self):
+        return self.job.course
+
     # def job_deadline(s1
 
 
-@receiver(post_save, sender=Application)
-def set_application_id(sender, instance, created, **kwargs):
-    if created and not instance.application_id:
-        id2string = str(instance.id).zfill(4)
-        specification = instance.specification.split(' ')
-        first_name_id = instance.applicant.first_name[0]
-        last_name_id = instance.applicant.last_name[0]
-        spec_id_1 = specification[0][0]
-        spec_id_2 = specification[1][0]
-        application_id = f"{first_name_id}{last_name_id}-" \
-                         f"{spec_id_1}{spec_id_2}-{id2string}"
-        instance.application_id = application_id
-        instance.save()
+# @receiver(post_save, sender=Application)
+# def set_application_id(sender, instance, created, **kwargs):
+#     if created and not instance.application_id:
+#         id2string = str(instance.id).zfill(4)
+#         specification = instance.specification.split(' ')
+#         first_name_id = instance.applicant.first_name[0]
+#         last_name_id = instance.applicant.last_name[0]
+#         spec_id_1 = specification[0][0]
+#         spec_id_2 = specification[1][0]
+#         application_id = f"{first_name_id}{last_name_id}-" \
+#                          f"{spec_id_1}{spec_id_2}-{id2string}"
+#         instance.application_id = application_id
+#         instance.save()
+
+
+class ApplicationStatus(models.Model):
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='application_status'
+    )
+    status = models.CharField(
+        max_length=11,
+        default='pending',
+    )
+    activity = models.CharField(max_length=50)
+    details = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-timestamp',)
