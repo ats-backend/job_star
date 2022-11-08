@@ -133,5 +133,12 @@ class JobDestroyAPIView(GenericAPIView):
         job = get_object_or_404(Job, id=pk)
         job.is_deleted = not job.is_deleted
         job.save()
-        return Response(status=status.HTTP_200_OK)
+
+        if not job.is_deleted:
+            return Response({
+                "Job is active"
+            })
+        return Response({
+            "Job is dis-active"
+        })
 

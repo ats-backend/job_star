@@ -15,7 +15,6 @@ def log_writter():
             level=logging.DEBUG,
             format="%(asctime)s %(message)s"
         )
-        print(logging)
         logging.DEBUG('dfghj')
         return logging
     elif logging.info:

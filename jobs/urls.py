@@ -26,7 +26,7 @@ urlpatterns = [
 
 
     # Job urls
-    path('job-list-create', JobListCreateAPIView.as_view(), name='jobs'),
+    path('', JobListCreateAPIView.as_view()),
     # path('create/', JobCreateAPIView.as_view(), name='job-create'),
     path('<int:pk>/detail', JobDetailAPIView.as_view(), name='job-detail'),
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
