@@ -59,7 +59,6 @@ class Job(models.Model):
                                 null=True, blank=True, related_name='jobs')
     cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE,
                                related_name='jobs')
-    responsibilities = models.TextField()
     requirement = models.TextField()
     date_posted = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField()
