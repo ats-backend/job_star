@@ -90,6 +90,24 @@ class JobListSerializers(serializers.ModelSerializer):
         fields = ('id', 'title', 'date_posted', 'deadline')
 
 
+class NestedCohortSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Courses
+        fields = (
+            'name', ''
+        )
+
+
+class NestedCoursesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = (
+            'title', 'description', 'image',
+            'created_at', 'is_delete'
+        )
+
+
 class JobSerializers(serializers.ModelSerializer):
 
     class Meta:
