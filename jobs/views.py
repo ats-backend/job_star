@@ -112,7 +112,7 @@ class JobListCreateAPIView(CustomRender, APIView):
             deadline__gt=self.today
             ).all()
         serializer = JobListSerializers(active_jobs, many=True)
-        print(log_writter())
+        # print(log_writter())
         return Response(serializer.data)
 
     def post(self, request):
