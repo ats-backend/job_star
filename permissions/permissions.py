@@ -28,7 +28,7 @@ class IsAuthenticated(BasePermission):
             return False
         hash = hashlib.sha256(de_hash.encode('utf8')).hexdigest()
 
-        if hash != hash_key:
-            return False
-
-        return True
+        # if hash != hash_key:
+        #     return False
+        return hash == hash_key
+        # return True

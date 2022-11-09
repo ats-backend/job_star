@@ -53,9 +53,19 @@ class ApplicationSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        # extract the applicant details from the application data
+        applicant_data = validated_data.pop('applicant')
+
+        # serialize, validate and create applicant data with ApplicantSerializer
+        applicant_serializer = ApplicantSerializer(data=applicant_data)
+        if applicant_serializer.is_valid():
+            applicant = applicant_serializer.save()
+        else:
+            raise serializers.ValidationError(applicant_serializer.errors)
 
         # create an application with the applicant's details
         application = Application.objects.create(
+            applicant=applicant,
             **validated_data
         )
         application_status = ApplicationStatus.objects.create(
