@@ -69,11 +69,13 @@ class CohortListAPIView(generics.ListAPIView):
 class CohortCreationAPIView(generics.CreateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
+    renderer_classes = (CustomRender,)
 
 
-class CohortDetailAPIView(CustomRender, generics.RetrieveAPIView):
+class CohortDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CohortUpdateAPIView(generics.UpdateAPIView):
@@ -102,7 +104,8 @@ class CohortDestroyAPIView(GenericAPIView):
         )
 
 
-class JobListCreateAPIView(CustomRender, APIView):
+class JobListCreateAPIView(APIView):
+    renderer_classes = (CustomRender,)
 
     today = timezone.now()
 
@@ -112,8 +115,11 @@ class JobListCreateAPIView(CustomRender, APIView):
             deadline__gt=self.today
             ).all()
         serializer = JobListSerializers(active_jobs, many=True)
-        print(log_writter())
-        return Response(serializer.data)
+        # print(log_writter())
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
 
     def post(self, request):
         serializer = JobSerializers(data=request.data)
@@ -121,11 +127,16 @@ class JobListCreateAPIView(CustomRender, APIView):
             serializer.save()
             serializer.save()
             print(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=serializer.data,
+                            status=status.HTTP_201_CREATED
+                            )
+        return Response(data=serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST
+                        )
 
 
-class JobDetailAPIView(CustomRender, APIView):
+class JobDetailAPIView(APIView):
+    renderer_classes = (CustomRender,)
 
     def get_object(self, pk):
         try:
@@ -136,10 +147,13 @@ class JobDetailAPIView(CustomRender, APIView):
     def get(self, request, pk, *args, **kwargs):
         job = self.get_object(pk)
         serializer = JobSerializers(job)
-        return Response(serializer.data)
+        return Response(data=serializer.data,
+                        status=status.HTTP_200_OK
+                        )
 
 
-class JobUpdateAPIView(CustomRender, APIView):
+class JobUpdateAPIView(APIView):
+    renderer_classes = (CustomRender,)
 
     def get_object(self, pk):
         try:
@@ -152,12 +166,17 @@ class JobUpdateAPIView(CustomRender, APIView):
         serializer = JobSerializers(job, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=serializer.data,
+                            status=status.HTTP_200_OK
+                            )
+        return Response(data=serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST
+                        )
 
 
-class JobDestroyAPIView(CustomRender, GenericAPIView):
+class JobDestroyAPIView(GenericAPIView):
     serializer_class = JobSerializers
+    renderer_classes = CustomRender
 
     def post(self, request, pk):
         job = get_object_or_404(Job, id=pk)
@@ -165,10 +184,12 @@ class JobDestroyAPIView(CustomRender, GenericAPIView):
         job.save()
 
         if not job.is_deleted:
-            return Response({
-                "Job is active"
-            })
-        return Response({
-            "Job is dis-active"
-        })
+            return Response(
+                data="Job is active",
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data="Job is dis-active",
+            status=status.HTTP_200_OK
+        )
 
