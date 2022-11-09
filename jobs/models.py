@@ -28,6 +28,7 @@ class Cohort(models.Model):
     application_end_date = models.DateTimeField()
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-start_date',)
@@ -54,7 +55,7 @@ class JobManager(models.Manager):
 class Job(models.Model):
     title = models.CharField(max_length=200, null=True, blank=True)
     slug = models.SlugField(null=True, blank=True)
-    course = models.ForeignKey(Courses,
+    course = models.OneToOneField(Courses,
                                 on_delete=models.CASCADE,
                                 null=True, blank=True, related_name='jobs')
     cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE,

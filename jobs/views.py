@@ -13,48 +13,57 @@ from .models import Job, Cohort, Courses
 from .serializers import (JobSerializers, JobListSerializers,
                           CoursesSerializers, CohortSerializers)
 from logs.logs import log_writter
+from renderers.renderers import CustomRender
 
 
 class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CourseDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CourseUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CourseDeleteAPIView(GenericAPIView):
     serializer_class = CoursesSerializers
+    renderer_classes = (CustomRender,)
 
     def post(self, request, pk):
         course = get_object_or_404(Courses, id=pk)
         course.is_delete = not course.is_delete
         course.save()
 
-        if course.is_delete == True:
-            return Response({
-                f"Course": f'{course.title} is dis-active'
-            })
-        return Response({
-            f"Course": f'{course.title} is Active'
-        })
+        if course.is_delete:
+            return Response(
+                data=f"{course.title} is dis-active",
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data=f'{course.title} is Active',
+            status=status.HTTP_200_OK
+        )
 
 
 class CohortListAPIView(generics.ListAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
+    renderer_classes = (CustomRender,)
 
 
 class CohortCreationAPIView(generics.CreateAPIView):
@@ -62,7 +71,7 @@ class CohortCreationAPIView(generics.CreateAPIView):
     queryset = Cohort.objects.all()
 
 
-class CohortDetailAPIView(generics.RetrieveAPIView):
+class CohortDetailAPIView(CustomRender, generics.RetrieveAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
 
@@ -70,9 +79,30 @@ class CohortDetailAPIView(generics.RetrieveAPIView):
 class CohortUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
+    renderer_classes = (CustomRender,)
 
 
-class JobListCreateAPIView(APIView):
+class CohortDestroyAPIView(GenericAPIView):
+    serializer_class = CohortSerializers
+    renderer_classes = (CustomRender,)
+
+    def post(self, request, pk):
+        cohort = get_object_or_404(Cohort, id=pk)
+        cohort.is_deleted = not cohort.is_deleted
+        cohort.save()
+
+        if cohort.is_deleted:
+            return Response(
+                data="Job is dis-active",
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data="Job is active",
+            status=status.HTTP_200_OK
+        )
+
+
+class JobListCreateAPIView(CustomRender, APIView):
 
     today = timezone.now()
 
@@ -95,7 +125,7 @@ class JobListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class JobDetailAPIView(APIView):
+class JobDetailAPIView(CustomRender, APIView):
 
     def get_object(self, pk):
         try:
@@ -109,7 +139,7 @@ class JobDetailAPIView(APIView):
         return Response(serializer.data)
 
 
-class JobUpdateAPIView(APIView):
+class JobUpdateAPIView(CustomRender, APIView):
 
     def get_object(self, pk):
         try:
@@ -126,7 +156,7 @@ class JobUpdateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class JobDestroyAPIView(GenericAPIView):
+class JobDestroyAPIView(CustomRender, GenericAPIView):
     serializer_class = JobSerializers
 
     def post(self, request, pk):

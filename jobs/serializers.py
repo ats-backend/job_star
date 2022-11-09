@@ -60,18 +60,31 @@ class CohortSerializers(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         courses = validated_data.pop('courses')
-        instance.title = validated_data.get('title', instance.title)
+        instance.name = validated_data.get('name', instance.name)
         instance.application_start_date = validated_data.get(
             'application_start_date', instance.application_start_date)
-        instance.application_start_end = validated_data.get(
-            'application_start_end', instance.application_start_end)
+        instance.application_end_date = validated_data.get(
+            'application_start_end', instance.application_end_date)
         instance.start_date = validated_data.get(
             'start_date', instance.start_date)
         instance.end_date = validated_data.get(
             'end_date', instance.end_date)
-        instance.courses.add(courses)
-        instance.save()
-        return instance
+        courses_id = []
+
+        try:
+            for course in courses:
+                for d in course:
+                    course_id = Courses.objects.get(title=(course[d]))
+                    courses_id.append(course_id.pk)
+                    print(course_id.title)
+                    print(courses_id)
+                    instance.courses.add(courses_id[0])
+            instance.save()
+            return instance
+        except:
+            raise Exception({
+                'An error occurred'
+            })
 
     def validate(self, attrs):
         cohort = Cohort.objects.values_list('name')
@@ -95,7 +108,8 @@ class NestedCohortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Courses
         fields = (
-            'name', ''
+            'name', 'courses', 'application_start_date',
+            'application_end_date', 'start_date', 'end_date'
         )
 
 
@@ -118,11 +132,6 @@ class JobSerializers(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
-        jobs = Job.objects.values_list('title')
-        if any(attrs['title'] in title for title in jobs):
-            raise serializers.ValidationError({
-                'title: A job with that title is already exist'
-            })
 
         if attrs['deadline'] < utc.localize(datetime.datetime.now()):
             raise serializers.ValidationError({
