@@ -41,28 +41,43 @@ class CreateApplicationAPIView(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         job = Job.objects.filter(id=kwargs['job_id']).first()
-        print(job)
         try:
             applicant_email = request.data.get('applicant').get('email')
         except:
             return Response(
-                data="No applicant details provided or invalid key",
+                data="No applicant details provided",
                 status=status.HTTP_400_BAD_REQUEST
             )
         if job:
             application = Application.objects.filter(
-                    job__deadline=job.deadline,
+                    job=job,
                     applicant__email=applicant_email
                 ).first()
             if application:
                 return Response(
-                    data="Applicant already applied",
+                    data="Applicant with that email already applied for this job",
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            elif Applicant.objects.filter(email=applicant_email).exists():
+                applicant = Applicant.objects.filter(email=applicant_email).first()
+
+            else:
+                # extract the applicant details from the application data
+                applicant_data = request.data.pop('applicant')
+                print(applicant_data)
+                # serialize, validate and create applicant data with ApplicantSerializer
+                applicant_serializer = ApplicantSerializer(data=applicant_data)
+                if applicant_serializer.is_valid():
+                    applicant = applicant_serializer.save()
+                else:
+                    return Response(
+                        data=applicant_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             serializer = self.get_serializer(data=request.data)
             # print(serializer)
             if serializer.is_valid():
-                application = serializer.save(job=job)
+                application = serializer.save(applicant=applicant,job=job)
                 data = {
                     'job': str(application.job),
                     'applicant': str(application.applicant),

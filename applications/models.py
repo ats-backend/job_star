@@ -36,6 +36,7 @@ class Applicant(models.Model):
     graduation_grade = models.CharField(max_length=20)
     is_willing_to_relocate = models.BooleanField()
     is_completed_NYSC = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('first_name', 'last_name')
@@ -59,6 +60,7 @@ class Application(models.Model):
         related_name='applications'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-timestamp',)
