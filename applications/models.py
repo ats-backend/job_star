@@ -71,31 +71,34 @@ class Application(models.Model):
 
     def applicant_email(self):
         return self.applicant.email
-
+    
+    @property
     def status(self):
         # if self.application_status.first():
         return self.application_status.first().status
         # return None
 
-    def program(self):
-        return self.job.course
+    @property
+    def course(self):
+        return self.job.course.title
 
     # def job_deadline(s1
 
 
-# @receiver(post_save, sender=Application)
-# def set_application_id(sender, instance, created, **kwargs):
-#     if created and not instance.application_id:
-#         id2string = str(instance.id).zfill(4)
-#         specification = instance.specification.split(' ')
-#         first_name_id = instance.applicant.first_name[0]
-#         last_name_id = instance.applicant.last_name[0]
-#         spec_id_1 = specification[0][0]
-#         spec_id_2 = specification[1][0]
-#         application_id = f"{first_name_id}{last_name_id}-" \
-#                          f"{spec_id_1}{spec_id_2}-{id2string}"
-#         instance.application_id = application_id
-#         instance.save()
+@receiver(post_save, sender=Application)
+def set_application_id(sender, instance, created, **kwargs):
+    if created and not instance.application_id:
+        id2string = str(instance.id).zfill(4)
+        course_title = instance.course
+        specification = course_title.split(' ')
+        first_name_id = instance.applicant.first_name[0]
+        last_name_id = instance.applicant.last_name[0]
+        spec_id_1 = specification[0][0]
+        spec_id_2 = specification[1][0]
+        application_id = f"{first_name_id}{last_name_id}-" \
+                         f"{spec_id_1}{spec_id_2}-{id2string}"
+        instance.application_id = application_id
+        instance.save()
 
 
 class ApplicationStatus(models.Model):
@@ -114,3 +117,4 @@ class ApplicationStatus(models.Model):
 
     class Meta:
         ordering = ('-timestamp',)
+        unique_together = ('application', 'status', 'activity',)

@@ -76,7 +76,11 @@ class ApplicationStatusSerializer(serializers.ModelSerializer):
         model = ApplicationStatus
         fields = (
             'status',
+            'application',
             'activity',
             'details',
             'timestamp',
         )
+        extra_kwargs = {
+            'application': {'write_only': True}
+        }
