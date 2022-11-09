@@ -1,4 +1,4 @@
 
 
-# class EncyptionMiddleware:
-#
+class EncyptionMiddleware:
+  pass

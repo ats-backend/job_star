@@ -3,22 +3,22 @@ import json
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
+from decouple import config
 
 from base64 import b64decode, b64encode
 
 
-# data = b"My name is Luqman"
-
-
 def encrypt_data(data):
-    data_in_byte = bytes(data, 'utf-8')
-    key = get_random_bytes(32)
-    cipher = AES.new(key, AES.MODE_CBC)
-    ct_bytes = cipher.encrypt(pad(data_in_byte, AES.block_size))
-    vector = b64encode(cipher.iv).decode('utf-8')
-    data = b64encode(ct_bytes).decode('utf-8')
-    json_key = b64encode(key).decode('utf-8')
-    result = json.dumps({'key': json_key, 'vector': vector, 'data': data})
+    key = config('ENCRYPTION_KEY')
+    vector = config('ENCRYPTION_VECTOR')
+    key_in_bytes = b64decode(key)
+    iv = b64decode(vector)
+    # json_data = json.dumps(data)
+    data_in_byte = bytes(json.dumps(data), 'utf-8')
+    cipher = AES.new(key_in_bytes, AES.MODE_CBC, iv)
+    encrypted_data = cipher.encrypt(pad(data_in_byte, AES.block_size))
+    data = b64encode(encrypted_data).decode('utf-8')
+    result = json.dumps({'key': key, 'vector': vector, 'data': data})
     return result
 
 
@@ -27,20 +27,10 @@ def decrypt_data(options):
         b64_data = json.loads(options)
     except:
         b64_data = json.loads((json.dumps(options)))
-    data = {}
-    for key, value in b64_data.items():
-        vector = b64decode(value['iv'])
-        ct = b64decode(value['ct'])
-        encryption_key = b64decode(value['key'])
-        cipher = AES.new(encryption_key, AES.MODE_CBC, vector)
-        data_in_byte = unpad(cipher.decrypt(ct), AES.block_size)
-        data_in_str = data_in_byte.decode('utf-8')
-        data.update({key: data_in_str})
-    return data
+    key = b64decode(config('ENCRYPTION_KEY'))
+    iv = b64decode(config('ENCRYPTION_VECTOR'))
+    data = b64decode(options)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    data_in_byte = unpad(cipher.decrypt(data), AES.block_size)
+    return data_in_byte.decode('utf-8')
 
-
-# encrypted_data = encrypt_data(data="BB-FD-0008")
-# data = {"key": "IROfMeB+Bxz6uhAALUw97En6g032iWqRHp6mKV91718=", "iv": "RUMN5tWZU33Iocdw15fDaw==", "ct": "s2wjZ77CYgDFgn8/JX9Wdw=="}
-# print(encrypted_data)
-# print(decrypt_data(encrypted_data))
-# print(decrypt_data({"key": "IROfMeB+Bxz6uhAALUw97En6g032iWqRHp6mKV91718=", "iv": "RUMN5tWZU33Iocdw15fDaw==", "ct": "s2wjZ77CYgDFgn8/JX9Wdw=="}))
