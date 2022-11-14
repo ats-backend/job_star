@@ -73,6 +73,9 @@ class Application(models.Model):
 
     def applicant_email(self):
         return self.applicant.email
+
+    def specification(self):
+        return self.job.course.title
     
     @property
     def status(self):

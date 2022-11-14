@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-7+x=%09$p8aosl(0^215*m9*=8o_e_fj7#^0o=6ejfg5skr20=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'job_star.middleware.EncryptionMiddleware',
 
 ]
 
