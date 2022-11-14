@@ -18,8 +18,8 @@ def encrypt_data(data):
     cipher = AES.new(key_in_bytes, AES.MODE_CBC, iv)
     encrypted_data = cipher.encrypt(pad(data_in_byte, AES.block_size))
     data = b64encode(encrypted_data).decode('utf-8')
-    result = json.dumps({'key': key, 'vector': vector, 'data': data})
-    return result
+    # result = json.dumps({'key': key, 'vector': vector, 'data': data})
+    return data
 
 
 def decrypt_data(options):
@@ -32,5 +32,9 @@ def decrypt_data(options):
     data = b64decode(options)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     data_in_byte = unpad(cipher.decrypt(data), AES.block_size)
-    return data_in_byte.decode('utf-8')
+    decoded_data = data_in_byte.decode('utf-8')
+    # print(type(decoded_data))
+    return json.loads(decoded_data)
 
+# data = json.loads(b'{\r\n    "application_id": "TP-FD-0007"\r\n}')
+# print(encrypt_data(data))

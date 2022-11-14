@@ -27,6 +27,13 @@ class ObjectMixin:
         return obj
 
 
+class EncryptionMixin:
+
+    def dispatch(self, request, *args, **kwargs):
+        print(request.POST)
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
