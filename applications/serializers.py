@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
+from rest_framework.validators import UniqueTogetherValidator
 
 from .models import Applicant, Application, ApplicationStatus
 
@@ -41,31 +42,53 @@ class ApplicantSerializer(serializers.ModelSerializer):
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
-    applicant = ApplicantSerializer(write_only=True)
+    # applicant = ApplicantSerializer(write_only=True)
+    url = serializers.HyperlinkedIdentityField(
+        view_name='applications:application_detail',
+        lookup_field='pk',
+        read_only=True
+    )
 
     class Meta:
         model = Application
         fields = (
+            'job',
             'applicant',
             'applicant_name',
             'applicant_email',
+            'applicant_phone',
+            'application_id',
+            'course',
             'status',
+            'url',
         )
+
+        extra_kwargs = {
+            'job': {'write_only': True},
+            'application': {'write_only': True}
+        }
+
+    def validate(self, attrs):
+        print(attrs)
+        return attrs
 
     def create(self, validated_data):
         # extract the applicant details from the application data
-        applicant_data = validated_data.pop('applicant')
-
-        # serialize, validate and create applicant data with ApplicantSerializer
-        applicant_serializer = ApplicantSerializer(data=applicant_data)
-        if applicant_serializer.is_valid():
-            applicant = applicant_serializer.save()
-        else:
-            raise serializers.ValidationError(applicant_serializer.errors)
-
-        # create an application with the applicant's details
+        # applicant_data = validated_data.pop('applicant')
+        #
+        # # serialize, validate and create applicant data with ApplicantSerializer
+        # applicant_serializer = ApplicantSerializer(data=applicant_data)
+        # if applicant_serializer.is_valid():
+        #     applicant = applicant_serializer.save()
+        # else:
+        #     raise serializers.ValidationError(applicant_serializer.errors)
+        #
+        # # create an application with the applicant's details
+        # application = Application.objects.create(
+        #     applicant=applicant,
+        #     **validated_data
+        # )
         application = Application.objects.create(
-            applicant=applicant,
             **validated_data
         )
         application_status = ApplicationStatus.objects.create(
@@ -73,7 +96,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             activity="Completed Application",
             details="You have completed your application and will receive a mail when there is an update"
         )
-        # print(application)
         return application
 
 
@@ -84,8 +106,8 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         model = Application
         fields = (
             'applicant',
-            'specification',
-            'applicant_name',
+            'application_id',
+            'course',
             'status',
         )
 

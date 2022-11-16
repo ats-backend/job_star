@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'applications',
     'jobs',
-    'rest_framework'
+    'rest_framework',
+    'phonenumber_field'
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,6 @@ REST_FRAMEWORK = {
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ],
 }
+
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = 'NG'

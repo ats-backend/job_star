@@ -21,8 +21,8 @@ class EncryptionMiddleware(MiddlewareMixin):
     #         request.POST = data
 
     def process_response(self, request, response):
-        if str(response.status_code).startswith('2'):
-            response.data = encrypt_data(response.data)
-            response._is_rendered = False
-            response.render()
+        # if str(response.status_code).startswith('2'):
+        #     response.data = encrypt_data(response.data)
+        #     response._is_rendered = False
+        #     response.render()
         return response
