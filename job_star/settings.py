@@ -56,7 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'logs.logs.ResponseLoggingMiddleware',
 
-    'job_star.middleware.EncryptionMiddleware',
+    # 'job_star.middleware.EncryptionMiddleware',
 
 ]
 
