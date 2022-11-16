@@ -23,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7+x=%09$p8aosl(0^215*m9*=8o_e_fj7#^0o=6ejfg5skr20='
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1', 'aptbk.afexats.com']
 
 
 # Application definition
