@@ -15,12 +15,12 @@ urlpatterns = [
     # courses urls
     path('courses/', CoursesListAPIView.as_view()),
     path('courses/create', CoursesCreationAPIView.as_view()),
-    path('courses/<int:pk>', CourseDetailAPIView.as_view()),
+    path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<int:pk>/edit', CourseUpdateAPIView.as_view()),
     path('courses/<int:pk>/delete', CourseDeleteAPIView.as_view()),
 
     # Cohort urls
-    path('cohorts', CohortListAPIView.as_view()),
+    path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
     path('cohort/create', CohortCreationAPIView.as_view()),
     path('cohort/<int:pk>', CohortDetailAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),

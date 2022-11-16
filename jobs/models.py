@@ -1,4 +1,4 @@
-
+from datetime import datetime
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -19,6 +19,18 @@ class Courses(models.Model):
     def __str__(self):
         return self.title
 
+    def active_cohort(self):
+        # print(self.cohort_set.all())
+        return self.cohort_set.filter(
+            end_date__gt=timezone.now(),
+        )
+
+    def open_job(self):
+        active_cohort = self.cohort_set.filter(
+            end_date__gt=timezone.now(),
+        ).first()
+        return active_cohort.jobs.all()
+
 
 class Cohort(models.Model):
     name = models.CharField(max_length=250, verbose_name='Batch')
@@ -36,9 +48,6 @@ class Cohort(models.Model):
     def __str__(self):
         return self.name
 
-    def get_courses(self):
-        return self.courses.all()
-
 
 @receiver(pre_save, sender=Cohort)
 def slugify_title(sender, **kwargs):
@@ -49,20 +58,21 @@ def slugify_title(sender, **kwargs):
 class JobManager(models.Manager):
     def get_queryset(self):
         return super(JobManager, self).get_queryset(
-        ).filter(is_delete=False)
+        ).filter(is_delete=False,
+                 deadline__gt=timezone.now()
+                 )
 
 
 class Job(models.Model):
     title = models.CharField(max_length=200, null=True, blank=True)
     slug = models.SlugField(null=True, blank=True)
-    course = models.OneToOneField(Courses,
-                                on_delete=models.CASCADE,
-                                null=True, blank=True, related_name='jobs')
-    cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE,
+    course = models.OneToOneField('Courses',
+                                  on_delete=models.CASCADE,
+                                  null=True, blank=True, related_name='jobs')
+    cohort = models.ForeignKey('Cohort', on_delete=models.CASCADE,
                                related_name='jobs')
     requirement = models.TextField()
     date_posted = models.DateTimeField(auto_now_add=True)
-    deadline = models.DateTimeField()
     modified_date = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
 
@@ -75,8 +85,8 @@ class Job(models.Model):
     def __str__(self):
         return self.title
 
-    def is_deadline(self):
-        return timezone.now() > self.deadline
+    def ongoing_cohort(self):
+        return self.cohort
 
 
 @receiver(pre_save, sender=Job)

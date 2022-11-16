@@ -1,4 +1,3 @@
-import logging
 
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, Http404
@@ -11,8 +10,9 @@ from rest_framework import status
 
 from .models import Job, Cohort, Courses
 from .serializers import (JobSerializers, JobListSerializers,
-                          CoursesSerializers, CohortSerializers)
-from logs.logs import log_writter
+                          CoursesSerializers, CohortSerializers,
+                          CourseDetailSerializer)
+
 from renderers.renderers import CustomRender
 
 
@@ -22,16 +22,37 @@ class CoursesCreationAPIView(generics.CreateAPIView):
     renderer_classes = (CustomRender,)
 
 
+class AdminCourseDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = CoursesSerializers
+    queryset = Courses.objects.all()
+    renderer_classes = (CustomRender,)
+
+
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
-    queryset = Courses.objects.all()
+    # queryset = Courses.objects.all()
     renderer_classes = (CustomRender,)
 
+    def get_queryset(self):
+        return Courses.objects.filter(is_delete=False)
 
-class CourseDetailAPIView(generics.RetrieveAPIView):
-    serializer_class = CoursesSerializers
-    queryset = Courses.objects.all()
+
+class CourseDetailAPIView(APIView):
     renderer_classes = (CustomRender,)
+
+    def get_object(self, pk):
+        try:
+            return Courses.objects.get(pk=pk)
+        except Courses.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        course = self.get_object(pk)
+        serializer = CourseDetailSerializer(course)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+            )
 
 
 class CourseUpdateAPIView(generics.UpdateAPIView):
@@ -115,7 +136,6 @@ class JobListCreateAPIView(APIView):
             deadline__gt=self.today
             ).all()
         serializer = JobListSerializers(active_jobs, many=True)
-        # print(log_writter())
         return Response(
             data=serializer.data,
             status=status.HTTP_200_OK
