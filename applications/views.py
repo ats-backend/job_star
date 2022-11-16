@@ -42,66 +42,136 @@ class ApplicationListAPIView(ListAPIView):
 
 
 class CreateApplicationAPIView(CreateAPIView):
-    serializer_class = ApplicationSerializer
+    serializer_class = ApplicantSerializer
     renderer_classes = (CustomRender,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         job = Job.objects.filter(id=kwargs['job_id']).first()
-        try:
-            applicant_email = request.data.get('applicant').get('email')
-        except:
-            return Response(
-                data="No applicant details provided",
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
         if job:
-            application = Application.objects.filter(
-                    job=job,
-                    applicant__email=applicant_email
-                ).first()
-            if application:
+            try:
+                applicant_email = request.data.get('email')
+                applicant = Applicant.objects.get(
+                    email__iexact=applicant_email
+                )
+                data = {
+                    'job': job.id,
+                    'applicant': applicant.id
+                }
+                application_serializer = ApplicationSerializer(
+                    data=data
+                )
+                application_serializer.is_valid(raise_exception=True)
+                return Response(
+                    data="Application successfully submitted",
+                    status=status.HTTP_200_OK
+                )
+            except Applicant.DoesNotExist:
+                applicant_serializer = ApplicantSerializer(data=request.data)
+                if applicant_serializer.is_valid():
+                    applicant = applicant_serializer.save()
+                    application_serializer = ApplicationSerializer(
+                        job=job,
+                        applicant=applicant
+                    )
+                    application_serializer.is_valid(raise_exception=True)
+                    return Response(
+                        data=application_serializer.data,
+                        status=status.HTTP_200_OK
+                    )
+                return Response(
+                    data=applicant_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except IntegrityError:
                 return Response(
                     data="Applicant with that email already applied for this job",
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            # elif Applicant.objects.filter(email=applicant_email).exists():
-            #     applicant = Applicant.objects.filter(email=applicant_email).first()
-            # else:
-            #     # extract the applicant details from the application data
-            #     applicant_data = request.data.pop('applicant')
-            #     # serialize, validate and create applicant data with ApplicantSerializer
-            #     applicant_serializer = ApplicantSerializer(data=applicant_data)
-            #     if applicant_serializer.is_valid():
-            #         applicant = applicant_serializer.save()
-            #     else:
-            #         return Response(
-            #             data=applicant_serializer.errors,
-            #             status=status.HTTP_400_BAD_REQUEST
-            #         )
-            serializer = self.get_serializer(data=request.data)
-            # print(serializer)
-            if serializer.is_valid():
-                application = serializer.save(job=job)
-                data = {
-                    'job': str(application.job),
-                    'applicant': str(application.applicant),
-                    'application_id': application.application_id,
-                    'status': application.status,
-                    'course': str(application.course)
-                }
-                return Response(
-                    data=data,
-                    status=status.HTTP_201_CREATED
-                )
-            return Response(
-                data=serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
         return Response(
             data="Reference job for application does not exist",
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+
+
+
+        #     application = Application.objects.filter(
+        #             job=job,
+        #             applicant__email=applicant_email
+        #         ).first()
+        #     if application:
+        #         return Response(
+        #             data="Applicant with that email already applied for this job",
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+        #     serializer = self.get_serializer(data=request.data)
+        #     # print(serializer)
+        #     if serializer.is_valid():
+        #         application = serializer.save(job=job)
+        #         data = {
+        #             'job': str(application.job),
+        #             'applicant': str(application.applicant),
+        #             'application_id': application.application_id,
+        #             'status': application.status,
+        #             'course': str(application.course)
+        #         }
+        #         return Response(
+        #             data=data,
+        #             status=status.HTTP_201_CREATED
+        #         )
+        #     return Response(
+        #         data=serializer.errors,
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+        # return Response(
+        #     data="Reference job for application does not exist",
+        #     status=status.HTTP_400_BAD_REQUEST
+        # )
+    # def post(self, request, *args, **kwargs):
+    #     job = Job.objects.filter(id=kwargs['job_id']).first()
+    #     try:
+    #         applicant_email = request.data.get('applicant').get('email')
+    #     except:
+    #         return Response(
+    #             data="No applicant details provided",
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #     if job:
+    #         application = Application.objects.filter(
+    #                 job=job,
+    #                 applicant__email=applicant_email
+    #             ).first()
+    #         if application:
+    #             return Response(
+    #                 data="Applicant with that email already applied for this job",
+    #                 status=status.HTTP_400_BAD_REQUEST
+    #             )
+    #         serializer = self.get_serializer(data=request.data)
+    #         # print(serializer)
+    #         if serializer.is_valid():
+    #             application = serializer.save(job=job)
+    #             data = {
+    #                 'job': str(application.job),
+    #                 'applicant': str(application.applicant),
+    #                 'application_id': application.application_id,
+    #                 'status': application.status,
+    #                 'course': str(application.course)
+    #             }
+    #             return Response(
+    #                 data=data,
+    #                 status=status.HTTP_201_CREATED
+    #             )
+    #         return Response(
+    #             data=serializer.errors,
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #     return Response(
+    #         data="Reference job for application does not exist",
+    #         status=status.HTTP_400_BAD_REQUEST
+    #     )
 
 
 class ApplicationDetailAPIView(RetrieveUpdateDestroyAPIView):

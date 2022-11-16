@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 from jobs.models import Job
 
 # Create your models here.
@@ -11,6 +13,7 @@ class Applicant(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=150, unique=True)
+    phone_number = PhoneNumberField()
     gender = models.CharField(max_length=10)
     marital_status = models.CharField(max_length=10, default='Single')
     date_of_birth = models.DateField()
@@ -64,6 +67,7 @@ class Application(models.Model):
 
     class Meta:
         ordering = ('-timestamp',)
+        unique_together = ('job', 'applicant',)
 
     def __str__(self):
         return f"Application for {self.job} by {self.applicant}"
@@ -74,8 +78,10 @@ class Application(models.Model):
     def applicant_email(self):
         return self.applicant.email
 
-    def specification(self):
-        return self.job.course.title
+    def applicant_phone(self):
+        phone_number = f"{self.applicant.phone_number.country_code}" \
+                       f"{self.applicant.phone_number.national_number}"
+        return phone_number
     
     @property
     def status(self):
