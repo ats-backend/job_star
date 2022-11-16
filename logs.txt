@@ -265,3 +265,4 @@ Time: 2022-11-16 08:05:40.717457  Method:GET  Status_code:200 Endpoint: 127.0.0.
 Time: 2022-11-16 08:06:43.367173  Method:POST  Status_code:200 Endpoint: 127.0.0.1/jobs/courses/4/delete
 Time: 2022-11-16 08:09:04.197454  Method:GET  Status_code:200 Endpoint: 127.0.0.1/jobs/courses/
 Time: 2022-11-16 08:43:15.173384  Method:GET  Status_code:200 Endpoint: 127.0.0.1/jobs/courses/3
+Time: 2022-11-16 09:26:15.290959  Method:GET  Status_code:401 Endpoint: 127.0.0.1/jobs/courses/
