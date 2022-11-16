@@ -14,24 +14,28 @@ from .serializers import (JobSerializers, JobListSerializers,
                           CourseDetailSerializer)
 
 from renderers.renderers import CustomRender
+from permissions.permissions import IsAuthenticated
 
 
 class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class AdminCourseDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
     # queryset = Courses.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         return Courses.objects.filter(is_delete=False)
@@ -39,6 +43,7 @@ class CoursesListAPIView(generics.ListAPIView):
 
 class CourseDetailAPIView(APIView):
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -59,11 +64,13 @@ class CourseUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CourseDeleteAPIView(GenericAPIView):
     serializer_class = CoursesSerializers
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, pk):
         course = get_object_or_404(Courses, id=pk)
@@ -85,29 +92,34 @@ class CohortListAPIView(generics.ListAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CohortCreationAPIView(generics.CreateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CohortDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CohortUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
 
 class CohortDestroyAPIView(GenericAPIView):
     serializer_class = CohortSerializers
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, pk):
         cohort = get_object_or_404(Cohort, id=pk)
@@ -127,6 +139,7 @@ class CohortDestroyAPIView(GenericAPIView):
 
 class JobListCreateAPIView(APIView):
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     today = timezone.now()
 
@@ -157,6 +170,7 @@ class JobListCreateAPIView(APIView):
 
 class JobDetailAPIView(APIView):
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -174,6 +188,7 @@ class JobDetailAPIView(APIView):
 
 class JobUpdateAPIView(APIView):
     renderer_classes = (CustomRender,)
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -197,6 +212,7 @@ class JobUpdateAPIView(APIView):
 class JobDestroyAPIView(GenericAPIView):
     serializer_class = JobSerializers
     renderer_classes = CustomRender
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, pk):
         job = get_object_or_404(Job, id=pk)

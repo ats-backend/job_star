@@ -177,7 +177,7 @@ class JobSerializers(serializers.ModelSerializer):
         model = Job
         fields = (
             'id', 'title', 'course', 'cohort',
-            'requirement', 'date_posted', 'deadline'
+            'requirement', 'date_posted'
         )
 
     def validate(self, attrs):
