@@ -1,5 +1,8 @@
 import datetime
 import pytz
+from django.utils import timezone
+
+from rest_framework.reverse import reverse
 
 utc = pytz.UTC
 
@@ -8,7 +11,6 @@ from .models import Job, Cohort, Courses
 
 
 class CoursesNextedSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = Courses
         fields = (
@@ -16,13 +18,64 @@ class CoursesNextedSerializers(serializers.ModelSerializer):
         )
 
 
-class CoursesSerializers(serializers.ModelSerializer):
+class NextedCohortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cohort
+        fields = (
+            'name',
+            'start_date',
+            'end_date',
+        )
+
+
+class NextedJobSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = (
+            'id',
+            'title',
+            'cohort',
+            'requirement',
+            'date_posted',
+        )
+
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    # open_cohort = serializers.SerializerMethodField(read_only=True)
+    # cohort = serializers.HyperlinkedRelatedField(queryset=Courses.objects.filter())
+    active_cohort = NextedCohortSerializer(many=True)
+    open_job = NextedJobSerializer(many=True)
 
     class Meta:
         model = Courses
         fields = (
-            'title', 'description'
+            'title',
+            'description',
+            'active_cohort',
+            'open_job'
         )
+
+
+class CoursesSerializers(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Courses
+        fields = (
+            'url',
+            'title',
+            'description'
+        )
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse('job:course-detail',
+                       kwargs={'pk': obj.pk},
+                       request=request
+                       )
 
     def validate(self, attrs):
         courses = Courses.objects.values_list('title')
@@ -42,7 +95,7 @@ class CohortSerializers(serializers.ModelSerializer):
         fields = (
             'name', 'start_date', 'end_date',
             'application_start_date',
-            'application_end_date','courses',
+            'application_end_date', 'courses',
         )
 
     def create(self, validated_data):
@@ -52,7 +105,7 @@ class CohortSerializers(serializers.ModelSerializer):
         for course in courses:
             course_title = Courses.objects.filter(
                 title__iexact=course.get('title')
-             ).first()
+            ).first()
             print(course_title)
             cohort_instance.courses.add(course_title)
         cohort_instance.save()
@@ -97,14 +150,12 @@ class CohortSerializers(serializers.ModelSerializer):
 
 
 class JobListSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = Job
         fields = ('id', 'title', 'date_posted', 'deadline')
 
 
 class NestedCohortSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Courses
         fields = (
@@ -114,7 +165,6 @@ class NestedCohortSerializer(serializers.ModelSerializer):
 
 
 class NestedCoursesSerializer(serializers.ModelSerializer):
-
     class Meta:
         fields = (
             'title', 'description', 'image',
@@ -123,7 +173,6 @@ class NestedCoursesSerializer(serializers.ModelSerializer):
 
 
 class JobSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = Job
         fields = (
@@ -132,7 +181,6 @@ class JobSerializers(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
-
         if attrs['deadline'] < utc.localize(datetime.datetime.now()):
             raise serializers.ValidationError({
                 'date_posted': "creation date and deadline can not be greater than"
