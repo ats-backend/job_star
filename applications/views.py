@@ -8,6 +8,7 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from job_star.encryption import encrypt_data
 from jobs.models import Job
 from permissions.permissions import IsAuthenticated
 from .models import Applicant, Application, ApplicationStatus
@@ -27,179 +28,69 @@ class ObjectMixin:
         return obj
 
 
-class EncryptionMixin:
+class EncryptionMixin(GenericAPIView):
 
-    def dispatch(self, request, *args, **kwargs):
-        print(request.POST)
-        return super().dispatch(request, *args, **kwargs)
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            self.get_queryset(), many=True
+        )
+        return Response(
+            data=encrypt_data(serializer.data),
+            status=status.HTTP_200_OK
+        )
 
 
 class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class CreateApplicationAPIView(CreateAPIView):
-    serializer_class = ApplicantSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
+    serializer_class = ApplicationSerializer
 
     def post(self, request, *args, **kwargs):
-        job = Job.objects.filter(id=kwargs['job_id']).first()
-
-        if job:
-            try:
-                applicant_email = request.data.get('email')
-                applicant = Applicant.objects.get(
-                    email__iexact=applicant_email
-                )
-                data = {
-                    'job': job.id,
-                    'applicant': applicant.id
-                }
-                application_serializer = ApplicationSerializer(
-                    data=data
-                )
-                application_serializer.is_valid(raise_exception=True)
-                return Response(
-                    data="Application successfully submitted",
-                    status=status.HTTP_200_OK
-                )
-            except Applicant.DoesNotExist:
-                applicant_serializer = ApplicantSerializer(data=request.data)
-                if applicant_serializer.is_valid():
-                    applicant = applicant_serializer.save()
-                    application_serializer = ApplicationSerializer(
-                        job=job,
-                        applicant=applicant
-                    )
-                    application_serializer.is_valid(raise_exception=True)
-                    return Response(
-                        data=application_serializer.data,
-                        status=status.HTTP_200_OK
-                    )
-                return Response(
-                    data=applicant_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            except IntegrityError:
-                return Response(
-                    data="Applicant with that email already applied for this job",
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        job_id = kwargs['job_id']
+        try:
+            applicant = Applicant.objects.get(email__iexact=request.data['email'])
+        except:
+            applicant_serializer = ApplicantSerializer(data=request.data)
+            applicant_serializer.is_valid(raise_exception=True)
+            applicant = applicant_serializer.save()
+        data = {
+            'applicant': applicant.id,
+            'job': job_id
+        }
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_201_CREATED
+            )
         return Response(
-            data="Reference job for application does not exist",
+            data=serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
-
-
-
-
-
-        #     application = Application.objects.filter(
-        #             job=job,
-        #             applicant__email=applicant_email
-        #         ).first()
-        #     if application:
-        #         return Response(
-        #             data="Applicant with that email already applied for this job",
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
-        #     serializer = self.get_serializer(data=request.data)
-        #     # print(serializer)
-        #     if serializer.is_valid():
-        #         application = serializer.save(job=job)
-        #         data = {
-        #             'job': str(application.job),
-        #             'applicant': str(application.applicant),
-        #             'application_id': application.application_id,
-        #             'status': application.status,
-        #             'course': str(application.course)
-        #         }
-        #         return Response(
-        #             data=data,
-        #             status=status.HTTP_201_CREATED
-        #         )
-        #     return Response(
-        #         data=serializer.errors,
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        # return Response(
-        #     data="Reference job for application does not exist",
-        #     status=status.HTTP_400_BAD_REQUEST
-        # )
-    # def post(self, request, *args, **kwargs):
-    #     job = Job.objects.filter(id=kwargs['job_id']).first()
-    #     try:
-    #         applicant_email = request.data.get('applicant').get('email')
-    #     except:
-    #         return Response(
-    #             data="No applicant details provided",
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #     if job:
-    #         application = Application.objects.filter(
-    #                 job=job,
-    #                 applicant__email=applicant_email
-    #             ).first()
-    #         if application:
-    #             return Response(
-    #                 data="Applicant with that email already applied for this job",
-    #                 status=status.HTTP_400_BAD_REQUEST
-    #             )
-    #         serializer = self.get_serializer(data=request.data)
-    #         # print(serializer)
-    #         if serializer.is_valid():
-    #             application = serializer.save(job=job)
-    #             data = {
-    #                 'job': str(application.job),
-    #                 'applicant': str(application.applicant),
-    #                 'application_id': application.application_id,
-    #                 'status': application.status,
-    #                 'course': str(application.course)
-    #             }
-    #             return Response(
-    #                 data=data,
-    #                 status=status.HTTP_201_CREATED
-    #             )
-    #         return Response(
-    #             data=serializer.errors,
-    #             status=status.HTTP_400_BAD_REQUEST
-    #         )
-    #     return Response(
-    #         data="Reference job for application does not exist",
-    #         status=status.HTTP_400_BAD_REQUEST
-    #     )
 
 
 class ApplicationDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicationDetailSerializer
     queryset = Application.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class ApplicantListAPIView(ListAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class ApplicantDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
     lookup_field = 'id'
 
 
 class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -209,7 +100,8 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="shortlisted",
                     activity="Shortlisted For Assessment",
-                    details="You have passed the application stage and have been invited to take an assesment."
+                    details="You have passed the application stage and "
+                            "have been invited to take an assesment."
                 )
             except IntegrityError:
                 latest_status = ApplicationStatus.objects.filter(
@@ -237,8 +129,6 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -248,7 +138,8 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="invited",
                     activity="Invited for Interview",
-                    details="You have completed your application and will receive a mail when there is an update"
+                    details="You have completed your application and "
+                            "will receive a mail when there is an update"
                 )
             except IntegrityError:
                 latest_status = ApplicationStatus.objects.filter(
@@ -276,8 +167,6 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -331,8 +220,6 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
 class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     ApplicationStatus.objects.filter()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -386,8 +273,6 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
 class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     ApplicationStatus.objects.filter()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -397,7 +282,8 @@ class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="passed",
                     activity="Passed Assessment",
-                    details="You have passed your assessment and will receive a mail when there is an update"
+                    details="You have passed your assessment and will "
+                            "receive a mail when there is an update"
                 )
             except IntegrityError:
                 return Response(
@@ -417,8 +303,6 @@ class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
 class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
     ApplicationStatus.objects.filter()
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -428,7 +312,8 @@ class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="failed",
                     activity="Failed Assessment",
-                    details="You have failed your assessment and will receive a mail when there is an update"
+                    details="You have failed your assessment and will "
+                            "receive a mail when there is an update"
                 )
             except IntegrityError:
                 return Response(
@@ -450,8 +335,6 @@ class PendingApplicationListAPIView(ListAPIView):
         application_status__status='pending'
     )
     serializer_class = ApplicationSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
@@ -459,8 +342,6 @@ class ShortlistedApplicationListAPIView(ListAPIView):
         application_status__status='shortlisted'
     )
     serializer_class = ApplicationSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class InvitedApplicationListAPIView(ListAPIView):
@@ -468,8 +349,6 @@ class InvitedApplicationListAPIView(ListAPIView):
         application_status__status='invited'
     )
     serializer_class = ApplicationSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class AcceptedApplicationListAPIView(ListAPIView):
@@ -477,8 +356,6 @@ class AcceptedApplicationListAPIView(ListAPIView):
         application_status__status='accepted'
     )
     serializer_class = ApplicationSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class RejectedApplicationListAPIView(ListAPIView):
@@ -486,13 +363,9 @@ class RejectedApplicationListAPIView(ListAPIView):
         application_status__status='rejected'
     )
     serializer_class = ApplicationSerializer
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
 
 class TrackApplicationAPIView(GenericAPIView):
-    renderer_classes = (CustomRender,)
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         # decrypted_data = decrypt_data(request.data)
