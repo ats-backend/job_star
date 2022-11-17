@@ -29,7 +29,6 @@ class NextedCohortSerializer(serializers.ModelSerializer):
 
 
 class NextedJobSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Job
         fields = (
@@ -87,6 +86,13 @@ class CoursesSerializers(serializers.ModelSerializer):
         return attrs
 
 
+class CohortCountDownSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Cohort
+        fields = ('end_date',)
+
+
 class CohortSerializers(serializers.ModelSerializer):
     courses = CoursesNextedSerializers(many=True)
 
@@ -122,6 +128,7 @@ class CohortSerializers(serializers.ModelSerializer):
             'start_date', instance.start_date)
         instance.end_date = validated_data.get(
             'end_date', instance.end_date)
+
         courses_id = []
 
         try:
@@ -129,7 +136,6 @@ class CohortSerializers(serializers.ModelSerializer):
                 for d in course:
                     course_id = Courses.objects.get(title=(course[d]))
                     courses_id.append(course_id.pk)
-                    print(course_id.title)
                     print(courses_id)
                     instance.courses.add(courses_id[0])
             instance.save()
@@ -152,7 +158,7 @@ class CohortSerializers(serializers.ModelSerializer):
 class JobListSerializers(serializers.ModelSerializer):
     class Meta:
         model = Job
-        fields = ('id', 'title', 'date_posted', 'deadline')
+        fields = ('id', 'title', 'date_posted')
 
 
 class NestedCohortSerializer(serializers.ModelSerializer):
@@ -173,6 +179,9 @@ class NestedCoursesSerializer(serializers.ModelSerializer):
 
 
 class JobSerializers(serializers.ModelSerializer):
+    course = CoursesNextedSerializers(read_only=True)
+    cohort = NextedCohortSerializer(read_only=True)
+
     class Meta:
         model = Job
         fields = (
@@ -180,10 +189,10 @@ class JobSerializers(serializers.ModelSerializer):
             'requirement', 'date_posted'
         )
 
-    def validate(self, attrs):
-        if attrs['deadline'] < utc.localize(datetime.datetime.now()):
-            raise serializers.ValidationError({
-                'date_posted': "creation date and deadline can not be greater than"
-                               "today's date",
-            })
-        return attrs
+    # def validate(self, attrs):
+    #     if attrs['deadline'] < utc.localize(datetime.datetime.now()):
+    #         raise serializers.ValidationError({
+    #             'date_posted': "creation date and deadline can not be greater than"
+    #                            "today's date",
+    #         })
+    #     return attrs
