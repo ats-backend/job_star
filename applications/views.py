@@ -47,6 +47,7 @@ class ApplicationListAPIView(ListAPIView):
 
 class CreateApplicationAPIView(CreateAPIView):
     serializer_class = ApplicationSerializer
+    parser_classes = (MultiPartParser, JSONParser,)
 
     def post(self, request, *args, **kwargs):
         job_id = kwargs['job_id']
