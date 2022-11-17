@@ -43,19 +43,20 @@ INSTALLED_APPS = [
     'applications',
     'jobs',
     'rest_framework',
-    'phonenumber_field'
+    'phonenumber_field',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'logs.logs.ResponseLoggingMiddleware',
-
     # 'job_star.middleware.EncryptionMiddleware',
 
 ]
@@ -151,7 +152,20 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'permissions.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'renderers.renderers.CustomRender',
+    ]
 }
 
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
 PHONENUMBER_DEFAULT_REGION = 'NG'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://127.0.0.1",
+    "http://assessbk.afexats.com",
+]

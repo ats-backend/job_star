@@ -67,7 +67,6 @@ class Application(models.Model):
 
     class Meta:
         ordering = ('-timestamp',)
-        unique_together = ('job', 'applicant',)
 
     def __str__(self):
         return f"Application for {self.job} by {self.applicant}"

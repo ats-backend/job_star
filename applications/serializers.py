@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.parsers import JSONParser
 from rest_framework.validators import UniqueTogetherValidator
 
+from jobs.models import Job
 from .models import Applicant, Application, ApplicationStatus
 
 
@@ -64,37 +65,32 @@ class ApplicationSerializer(serializers.ModelSerializer):
         )
 
         extra_kwargs = {
-            'job': {'write_only': True},
             'application': {'write_only': True}
         }
 
     def validate(self, attrs):
-        print(attrs)
+        job = attrs.get('job')
+        applicant = attrs.get('applicant')
+        application = Application.objects.filter(
+            job=job,
+            applicant=applicant
+        ).exists()
+        if application:
+            raise serializers.ValidationError(
+                "Applicant already applied for the job"
+            )
+        # print(attrs)
         return attrs
 
     def create(self, validated_data):
-        # extract the applicant details from the application data
-        # applicant_data = validated_data.pop('applicant')
-        #
-        # # serialize, validate and create applicant data with ApplicantSerializer
-        # applicant_serializer = ApplicantSerializer(data=applicant_data)
-        # if applicant_serializer.is_valid():
-        #     applicant = applicant_serializer.save()
-        # else:
-        #     raise serializers.ValidationError(applicant_serializer.errors)
-        #
-        # # create an application with the applicant's details
-        # application = Application.objects.create(
-        #     applicant=applicant,
-        #     **validated_data
-        # )
         application = Application.objects.create(
             **validated_data
         )
         application_status = ApplicationStatus.objects.create(
             application=application,
             activity="Completed Application",
-            details="You have completed your application and will receive a mail when there is an update"
+            details="You have completed your application and "
+                    "will receive a mail when there is an update"
         )
         return application
 
