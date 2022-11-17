@@ -7,7 +7,7 @@ from .views import (CourseDetailAPIView,
                     JobUpdateAPIView, JobDestroyAPIView,
                     CohortListAPIView, CohortUpdateAPIView,
                     CohortCreationAPIView, CohortDetailAPIView,
-                    CohortDestroyAPIView)
+                    CohortDestroyAPIView, CohortCountDownAPIView)
 
 app_name = 'job'
 
@@ -25,6 +25,7 @@ urlpatterns = [
     path('cohort/<int:pk>', CohortDetailAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
+    path('latest-cohort', CohortCountDownAPIView.as_view()),
 
 
     # Job urls
