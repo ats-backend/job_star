@@ -11,7 +11,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
 
     def basicConfig(self, **messages):
 
-        with open(file='logs.txt', mode='a') as file:
+        with open(file='app_jobs.log', mode='a') as file:
             handler = file.write(
                 f'Time: {messages["time"]}' + "  "
                 f'Method:{self.req.method}' + "  "
@@ -27,7 +27,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
 
             log.info(self.basicConfig(
                 time=datetime.now(),
-                filename="logs.txt",
+                filename="app_jobs.log",
                 method=f'{response.status_code}',
                 endpoint=f"{request.META['REMOTE_ADDR']}"
                          f"{request.get_full_path()}"
