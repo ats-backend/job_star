@@ -1,6 +1,6 @@
-from datetime import datetime
 import logging
 from django.utils.deprecation import MiddlewareMixin
+from django.utils import timezone
 
 
 log = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
 
     def basicConfig(self, **messages):
 
-        with open(file='logs.txt', mode='a') as file:
+        with open(file='app_jobs.log', mode='a') as file:
             handler = file.write(
                 f'Time: {messages["time"]}' + "  "
                 f'Method:{self.req.method}' + "  "
@@ -26,8 +26,8 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
         try:
 
             log.info(self.basicConfig(
-                time=datetime.now(),
-                filename="logs.txt",
+                time=timezone.now(),
+                filename="app_jobs.log",
                 method=f'{response.status_code}',
                 endpoint=f"{request.META['REMOTE_ADDR']}"
                          f"{request.get_full_path()}"

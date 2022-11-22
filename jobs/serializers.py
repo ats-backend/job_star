@@ -181,12 +181,16 @@ class NestedCoursesSerializer(serializers.ModelSerializer):
 class JobSerializers(serializers.ModelSerializer):
     course = CoursesNextedSerializers(read_only=True)
     cohort = NextedCohortSerializer(read_only=True)
+    application = serializers.HyperlinkedIdentityField(
+        view_name='applications:applications',
+        lookup_field='job_id',
+    )
 
     class Meta:
         model = Job
         fields = (
             'id', 'title', 'course', 'cohort',
-            'requirement', 'date_posted'
+            'requirement', 'date_posted', 'application'
         )
 
     # def validate(self, attrs):
