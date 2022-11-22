@@ -27,11 +27,6 @@ urlpatterns = [
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
     path('latest-cohort', CohortCountDownAPIView.as_view()),
 
-    ##################
-    # Application
-    path('<int:job_id>/application/', include('applications.urls')),
-
-
     # Job urls
     path('', JobListCreateAPIView.as_view()),
     # path('create/', JobCreateAPIView.as_view(), name='job-create'),
