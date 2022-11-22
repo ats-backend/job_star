@@ -17,7 +17,7 @@ app_name = 'applications'
 
 urlpatterns = [
     path('', ApplicationListAPIView.as_view(), name='applications'),
-    path('<int:job_id>/apply', CreateApplicationAPIView.as_view(), name='create_application'),
+    path('apply', CreateApplicationAPIView.as_view(), name='create_application'),
     path('<int:pk>', ApplicationDetailAPIView.as_view(), name='application_detail'),
     path('applicants', ApplicantListAPIView.as_view(), name='applicants'),
     path('applicants/<int:pk>', ApplicantDetailAPIView.as_view(), name='applicant_detail'),
