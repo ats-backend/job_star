@@ -8,7 +8,9 @@ from .views import (
     SetInvitedApplicationAPIView, SetRejectedApplicationAPIView,
     TrackApplicationAPIView, SetShortlistedApplicationAPIView,
     ShortlistedApplicationListAPIView, SetPassedApplicationTestAPIView,
-    SetFailedApplicationTestAPIView
+    SetFailedApplicationTestAPIView, ValidateApplicationIDAPIView, ApplicationEmailTemplateAPIView,
+    DeleteApplicationAPIView, DeleteApplicantAPIView, DeleteEmailTemplateAPIView, ApplicationEmailTemplateDetailAPIView,
+    DeletedApplicationAPIView, DeletedApplicantAPIView, DeletedEmailTemplateAPIView
 )
 
 app_name = 'applications'
@@ -17,8 +19,8 @@ urlpatterns = [
     path('', ApplicationListAPIView.as_view(), name='applications'),
     path('<int:job_id>/apply', CreateApplicationAPIView.as_view(), name='create_application'),
     path('<int:pk>', ApplicationDetailAPIView.as_view(), name='application_detail'),
-    path('<int:pk>/applicants', ApplicantListAPIView.as_view(), name='applicants'),
-    path('<int:pk>/applicants/<int:id>', ApplicantDetailAPIView.as_view(), name='applicant_detail'),
+    path('applicants', ApplicantListAPIView.as_view(), name='applicants'),
+    path('applicants/<int:pk>', ApplicantDetailAPIView.as_view(), name='applicant_detail'),
     path('accepted', AcceptedApplicationListAPIView.as_view(), name='accepted_applications'),
     path('invited-for-interview', InvitedApplicationListAPIView.as_view(), name='invited_applications'),
     path('pending', PendingApplicationListAPIView.as_view(), name='pending_applications'),
@@ -31,5 +33,14 @@ urlpatterns = [
     path('<int:pk>/set-passed', SetPassedApplicationTestAPIView.as_view(), name='passed'),
     path('<int:pk>/set-passed', SetFailedApplicationTestAPIView.as_view(), name='failed'),
     path('track', TrackApplicationAPIView.as_view(), name='track'),
+    path('validate', ValidateApplicationIDAPIView.as_view(), name='validate'),
+    path('email-templates', ApplicationEmailTemplateAPIView.as_view(), name='emails'),
+    path('email-templates/<int:pk>', ApplicationEmailTemplateDetailAPIView.as_view(), name='email_detail'),
+    path('<int:pk>/toggle-delete', DeleteApplicationAPIView.as_view(), name='delete_application'),
+    path('applicants/<int:pk>/toggle-delete', DeleteApplicantAPIView.as_view(), name='delete_applicant'),
+    path('email-templates/<int:pk>/toggle-delete', DeleteEmailTemplateAPIView.as_view(), name='delete_email'),
+    path('trash', DeletedApplicationAPIView.as_view(), name='trashed_applications'),
+    path('applicants/trash', DeletedApplicantAPIView.as_view(), name='trashed_applicants'),
+    path('email-templates/trash', DeletedEmailTemplateAPIView.as_view(), name='trashed_emails'),
 
 ]
