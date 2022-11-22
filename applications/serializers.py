@@ -5,17 +5,57 @@ from rest_framework import serializers
 from rest_framework.parsers import JSONParser
 from rest_framework.validators import UniqueTogetherValidator
 
+from helpers.utils import send_application_success_mail
 from jobs.models import Job
-from .models import Applicant, Application, ApplicationStatus
+from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
+
+
+class ApplicantListSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='applications:applicant_detail',
+        lookup_field='pk',
+        read_only=True
+    )
+
+    class Meta:
+        model = Applicant
+        fields = (
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'number_of_applications',
+            'url',
+        )
+
+
+class ApplicantApplicationsSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='applications:application_detail',
+        lookup_field='pk',
+        read_only=True
+    )
+
+    class Meta:
+        model = Application
+        fields = (
+            'application_id',
+            'course',
+            'status',
+            'url',
+        )
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
-    # resume = Base64FileField()
-    # attachments = Base64FileField()
+    applications = ApplicantApplicationsSerializer(
+        many=True,
+        read_only=True
+    )
 
     class Meta:
         model = Applicant
         exclude = ('id',)
+        # fields = ('first_name')
 
     def validate_gender(self, value):
         # check if the applicant's gender is either male or female
@@ -65,7 +105,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
         )
 
         extra_kwargs = {
-            'application': {'write_only': True}
+            'applicant': {'write_only': True},
+            'job': {'write_only': True}
         }
 
     def validate(self, attrs):
@@ -92,6 +133,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             details="You have completed your application and "
                     "will receive a mail when there is an update"
         )
+        send_application_success_mail(application.applicant)
         return application
 
 
@@ -106,17 +148,6 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
             'course',
             'status',
         )
-
-    def create(self, validated_data):
-        print("Got called")
-        applicant_data = validated_data.pop('applicant')
-        applicant = Applicant.objects.create(**applicant_data)
-        application = Application.objects.create(
-            applicant=applicant,
-            **validated_data
-        )
-        # print(application)
-        return application
 
 
 class TrackApplicationSerializer(serializers.Serializer):
@@ -137,3 +168,34 @@ class ApplicationStatusSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'application': {'write_only': True}
         }
+
+
+class ApplicationEmailListSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='applications:email_detail',
+        lookup_field='pk',
+        read_only=True
+    )
+
+    class Meta:
+        model = ApplicationEmail
+        fields = (
+            'type',
+            'subject',
+            'salutation',
+            'body',
+            'created_on',
+            'last_modified',
+            'url'
+        )
+        extra_kwargs = {
+            'salutation': {'write_only': True},
+            'body': {'write_only': True},
+        }
+
+
+class ApplicationEmailDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ApplicationEmail
+        exclude = ('id',)

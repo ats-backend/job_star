@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1', 'aptbk.afexats.com']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,6 +44,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'phonenumber_field',
     'corsheaders',
+    'djcelery_email',
+    'celery',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +151,13 @@ MEDIA_ROOT = BASE_DIR / 'job_star' / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -172,3 +181,29 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
     "http://assessbk.afexats.com",
 ]
+
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+
+CELERY_EMAIL_TASK_CONFIG = {
+    'ignore_result': False,
+}
+
+CELERY_EMAIL_CHUNK_SIZE = 1
+
+# BROKER_URL = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'default'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Lagos'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60

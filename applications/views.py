@@ -3,18 +3,21 @@ from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.generics import (
     CreateAPIView, GenericAPIView, ListCreateAPIView,
-    ListAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
+    ListAPIView, RetrieveUpdateAPIView
 )
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from helpers.utils import send_application_success_mail
 from job_star.encryption import encrypt_data
 from jobs.models import Job
 from permissions.permissions import IsAuthenticated
-from .models import Applicant, Application, ApplicationStatus
+from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
-    ApplicationSerializer, TrackApplicationSerializer, ApplicationStatusSerializer
+    ApplicationSerializer, TrackApplicationSerializer,
+    ApplicationStatusSerializer, ApplicantListSerializer,
+    ApplicationEmailListSerializer, ApplicationEmailDetailSerializer,
 )
 from renderers.renderers import CustomRender
 
@@ -42,7 +45,13 @@ class EncryptionMixin(GenericAPIView):
 
 class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
-    queryset = Application.objects.all()
+
+    def get_queryset(self):
+        if self.kwargs.get('job_id'):
+            return Application.active_objects.filter(
+                job_id=self.kwargs['job_id']
+            )
+        return Application.active_objects.all()
 
 
 class CreateApplicationAPIView(CreateAPIView):
@@ -64,6 +73,7 @@ class CreateApplicationAPIView(CreateAPIView):
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            send_application_success_mail(applicant)
             return Response(
                 data=serializer.data,
                 status=status.HTTP_201_CREATED
@@ -74,24 +84,23 @@ class CreateApplicationAPIView(CreateAPIView):
         )
 
 
-class ApplicationDetailAPIView(RetrieveUpdateDestroyAPIView):
+class ApplicationDetailAPIView(RetrieveUpdateAPIView):
     serializer_class = ApplicationDetailSerializer
     queryset = Application.objects.all()
 
 
 class ApplicantListAPIView(ListAPIView):
-    serializer_class = ApplicantSerializer
-    queryset = Applicant.objects.all()
+    serializer_class = ApplicantListSerializer
+    queryset = Applicant.active_objects.all()
 
 
-class ApplicantDetailAPIView(RetrieveUpdateDestroyAPIView):
+class ApplicantDetailAPIView(RetrieveUpdateAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
-    lookup_field = 'id'
 
 
 class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.objects.all()
+    queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -100,7 +109,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
                 application_status = ApplicationStatus.objects.create(
                     application=application,
                     status="shortlisted",
-                    activity="Shortlisted For Assessment",
+                    activity="Shortlisted for Assessment",
                     details="You have passed the application stage and "
                             "have been invited to take an assesment."
                 )
@@ -129,7 +138,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 
 class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.objects.all()
+    queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -167,7 +176,7 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 
 class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.objects.all()
+    queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -220,7 +229,6 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.objects.all()
-    ApplicationStatus.objects.filter()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -272,8 +280,7 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
 
 
 class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.objects.all()
-    ApplicationStatus.objects.filter()
+    queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -302,8 +309,7 @@ class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
 
 
 class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.objects.all()
-    ApplicationStatus.objects.filter()
+    queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
         application = self.get_object()
@@ -332,35 +338,35 @@ class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
 
 
 class PendingApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(
+    queryset = Application.active_objects.filter(
         application_status__status='pending'
     )
     serializer_class = ApplicationSerializer
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(
+    queryset = Application.active_objects.filter(
         application_status__status='shortlisted'
     )
     serializer_class = ApplicationSerializer
 
 
 class InvitedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(
+    queryset = Application.active_objects.filter(
         application_status__status='invited'
     )
     serializer_class = ApplicationSerializer
 
 
 class AcceptedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(
+    queryset = Application.active_objects.filter(
         application_status__status='accepted'
     )
     serializer_class = ApplicationSerializer
 
 
 class RejectedApplicationListAPIView(ListAPIView):
-    queryset = Application.objects.filter(
+    queryset = Application.active_objects.filter(
         application_status__status='rejected'
     )
     serializer_class = ApplicationSerializer
@@ -399,3 +405,112 @@ class TrackApplicationAPIView(GenericAPIView):
             data=data,
             status=status.HTTP_404_NOT_FOUND
         )
+
+
+class ValidateApplicationIDAPIView(GenericAPIView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = TrackApplicationSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        application = Application.objects.filter(
+            application_id__iexact=serializer.data['application_id']
+        ).first()
+        if application:
+            data = {
+                'applicant_name': application.applicant_name(),
+                'applicant_email': application.applicant_email(),
+                'application_id': application.application_id,
+                'course': application.course
+            }
+            return Response(
+                data=data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data="No such application exists",
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+class ApplicationEmailTemplateAPIView(ListCreateAPIView):
+    serializer_class = ApplicationEmailListSerializer
+    queryset = ApplicationEmail.active_objects.all()
+
+
+class ApplicationEmailTemplateDetailAPIView(RetrieveUpdateAPIView):
+    serializer_class = ApplicationEmailDetailSerializer
+    queryset = ApplicationEmail.active_objects.all()
+
+
+class DeleteApplicationAPIView(GenericAPIView):
+    queryset = Application.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = not instance.is_deleted
+        instance.save()
+        state = "trashed" if instance.is_deleted else "restored"
+        data = {
+            'deleted': instance.is_deleted,
+            'message': f"Application {state} successfully"
+        }
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK
+        )
+
+
+class DeleteApplicantAPIView(GenericAPIView):
+    queryset = Applicant.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = not instance.is_deleted
+        instance.save()
+        for application in instance.applications(manager='objects').all():
+            application.is_deleted = instance.is_deleted
+            application.save()
+        state = "trashed" if instance.is_deleted else "restored"
+        data = {
+            'deleted': instance.is_deleted,
+            'message': f"Applicant {state} successfully"
+        }
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK
+        )
+
+
+class DeleteEmailTemplateAPIView(GenericAPIView):
+    queryset = ApplicationEmail.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = not instance.is_deleted
+        instance.save()
+        state = "trashed" if instance.is_deleted else "restored"
+        data = {
+            'deleted': instance.is_deleted,
+            'message': f"Email template {state} successfully"
+        }
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK
+        )
+
+
+class DeletedApplicationAPIView(ListAPIView):
+    serializer_class = ApplicationSerializer
+    queryset = Application.deleted_objects.all()
+
+
+class DeletedApplicantAPIView(ListAPIView):
+    serializer_class = ApplicantListSerializer
+    queryset = Applicant.deleted_objects.all()
+
+
+class DeletedEmailTemplateAPIView(ListAPIView):
+    serializer_class = ApplicationEmailListSerializer
+    queryset = ApplicationEmail.deleted_objects.all()

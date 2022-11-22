@@ -4,9 +4,23 @@ from django.dispatch import receiver
 
 from phonenumber_field.modelfields import PhoneNumberField
 
+from helpers.utils import send_application_shortlisted_mail, send_application_interview_mail, \
+    send_application_accepted_mail, send_application_rejected_mail
 from jobs.models import Job
 
 # Create your models here.
+
+
+class ActiveObject(models.Manager):
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
+class DeletedObject(models.Manager):
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=True)
 
 
 class Applicant(models.Model):
@@ -15,7 +29,7 @@ class Applicant(models.Model):
     email = models.EmailField(max_length=150, unique=True)
     phone_number = PhoneNumberField()
     gender = models.CharField(max_length=10)
-    marital_status = models.CharField(max_length=10, default='Single')
+    marital_status = models.CharField(max_length=10, default='single')
     date_of_birth = models.DateField()
     country_of_origin = models.CharField(max_length=50)
     current_location = models.CharField(max_length=50)
@@ -41,6 +55,11 @@ class Applicant(models.Model):
     is_completed_NYSC = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
 
+    active_objects = ActiveObject()
+    deleted_objects = DeletedObject()
+
+    objects = models.Manager()
+
     class Meta:
         ordering = ('first_name', 'last_name')
 
@@ -49,6 +68,10 @@ class Applicant(models.Model):
 
     def fullname(self):
         return f'{self.first_name} {self.last_name}'
+
+    @property
+    def number_of_applications(self):
+        return self.applications(manager='active_objects').count()
 
 
 class Application(models.Model):
@@ -64,6 +87,11 @@ class Application(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
+
+    active_objects = ActiveObject()
+    deleted_objects = DeletedObject()
+
+    objects = models.Manager()
 
     class Meta:
         ordering = ('-timestamp',)
@@ -128,3 +156,46 @@ class ApplicationStatus(models.Model):
     class Meta:
         ordering = ('-timestamp',)
         unique_together = ('application', 'status', 'activity',)
+
+
+@receiver(post_save, sender=ApplicationStatus)
+def send_status_email(sender, instance, created, **kwargs):
+    if created:
+        if instance.status == 'shortlisted':
+            send_application_shortlisted_mail(instance)
+        if instance.status == 'invited':
+            send_application_interview_mail(instance)
+        if instance.status == 'accepted':
+            send_application_accepted_mail(instance)
+        if instance.status == 'rejected':
+            send_application_rejected_mail(instance)
+
+
+EMAIL_TYPE_CHOICES = (
+    ('shortlisted', 'Shortlisted'),
+    ('invited', 'Invited for Interview'),
+    ('accepted', 'Accepted'),
+    ('rejected', 'Rejected'),
+)
+
+
+class ApplicationEmail(models.Model):
+    subject = models.CharField(max_length=100)
+    salutation = models.CharField(max_length=10)
+    body = models.TextField()
+    type = models.CharField(
+        choices=EMAIL_TYPE_CHOICES,
+        max_length=20
+    )
+    created_on = models.DateTimeField(auto_now=True)
+    last_modified = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    active_objects = ActiveObject()
+    deleted_objects = DeletedObject()
+
+    objects = models.Manager()
+
+    class Meta:
+        ordering = ('-created_on',)
+
