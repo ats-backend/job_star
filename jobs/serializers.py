@@ -8,6 +8,7 @@ utc = pytz.UTC
 
 from rest_framework import serializers
 from .models import Job, Cohort, Courses
+from applications.models import Application
 
 
 class CoursesNextedSerializers(serializers.ModelSerializer):
@@ -156,9 +157,24 @@ class CohortSerializers(serializers.ModelSerializer):
 
 
 class JobListSerializers(serializers.ModelSerializer):
+    # application = serializers.HyperlinkedIdentityField(
+    #     view_name='applications:applications',
+    #     lookup_field='pk',
+    #     read_only=True
+    # )
+    # job_id = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Job
-        fields = ('id', 'title', 'date_posted')
+        fields = (
+            'id',
+            'title',
+            'date_posted',
+            # 'application',
+            'application_url'
+                  )
+
+    # def job_id(self):
+    #     return Job.active_jobs.
 
 
 class NestedCohortSerializer(serializers.ModelSerializer):
@@ -181,16 +197,12 @@ class NestedCoursesSerializer(serializers.ModelSerializer):
 class JobSerializers(serializers.ModelSerializer):
     course = CoursesNextedSerializers(read_only=True)
     cohort = NextedCohortSerializer(read_only=True)
-    application = serializers.HyperlinkedIdentityField(
-        view_name='applications:applications',
-        lookup_field='job_id',
-    )
 
     class Meta:
         model = Job
         fields = (
             'id', 'title', 'course', 'cohort',
-            'requirement', 'date_posted', 'application'
+            'requirement', 'date_posted'
         )
 
     # def validate(self, attrs):

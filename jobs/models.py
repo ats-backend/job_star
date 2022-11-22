@@ -5,6 +5,8 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
 
+from rest_framework.reverse import reverse
+
 
 class Courses(models.Model):
     title = models.CharField(max_length=250, verbose_name='Course Title')
@@ -87,6 +89,9 @@ class Job(models.Model):
 
     def ongoing_cohort(self):
         return self.cohort
+
+    def application_url(self):
+        return reverse('applications:applications', args=[self.id])
 
 
 @receiver(pre_save, sender=Job)

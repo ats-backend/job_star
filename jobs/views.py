@@ -135,7 +135,12 @@ class JobListCreateAPIView(APIView):
         active_jobs = Job.objects.filter(
             is_deleted=False,
         ).all()
-        serializer = JobListSerializers(active_jobs, many=True)
+        serializer = JobListSerializers(
+            active_jobs,
+            many=True,
+            context={'request': request}
+        )
+        print(serializer.data)
         return Response(
             data=serializer.data,
             status=status.HTTP_200_OK
