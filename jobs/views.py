@@ -9,9 +9,11 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Job, Cohort, Courses
-from .serializers import (JobSerializers, JobListSerializers,
-                          CoursesSerializers, CohortSerializers,
-                          CourseDetailSerializer, CohortCountDownSerializer)
+from .serializers import (
+            JobSerializers, JobListSerializers,
+            CoursesSerializers, CohortSerializers,
+            CourseDetailSerializer, CohortCountDownSerializer
+            )
 
 from renderers.renderers import CustomRender
 from permissions.permissions import IsAuthenticated

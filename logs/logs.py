@@ -1,6 +1,6 @@
-from datetime import datetime
 import logging
 from django.utils.deprecation import MiddlewareMixin
+from django.utils import timezone
 
 
 log = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
         try:
 
             log.info(self.basicConfig(
-                time=datetime.now(),
+                time=timezone.now(),
                 filename="app_jobs.log",
                 method=f'{response.status_code}',
                 endpoint=f"{request.META['REMOTE_ADDR']}"

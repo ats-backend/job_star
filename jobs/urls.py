@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
 from .views import (CourseDetailAPIView,
-                    CourseUpdateAPIView,CourseDeleteAPIView,
+                    CourseUpdateAPIView, CourseDeleteAPIView,
                     CoursesListAPIView,  CoursesCreationAPIView,
                     JobListCreateAPIView, JobDetailAPIView,
                     JobUpdateAPIView, JobDestroyAPIView,
@@ -21,11 +21,15 @@ urlpatterns = [
 
     # Cohort urls
     path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
-    path('cohort/create', CohortCreationAPIView.as_view()),
+    path('cohort/create', CohortCreationAPIView.as_view(), name='cohort-create'),
     path('cohort/<int:pk>', CohortDetailAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
     path('latest-cohort', CohortCountDownAPIView.as_view()),
+
+    ##################
+    # Application
+    path('<int:job_id>/application/', include('applications.urls')),
 
 
     # Job urls
