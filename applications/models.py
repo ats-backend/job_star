@@ -126,7 +126,13 @@ class Application(models.Model):
 @receiver(post_save, sender=Application)
 def set_application_id(sender, instance, created, **kwargs):
     if created and not instance.application_id:
-        id2string = str(instance.id).zfill(4)
+        if instance.id <= 9999:
+            fill = 4
+        elif instance.id <= 99999:
+            fill = 5
+        else:
+            fill = 6
+        id2string = str(instance.id).zfill(fill)
         course_title = instance.course
         specification = course_title.split(' ')
         first_name_id = instance.applicant.first_name[0]
