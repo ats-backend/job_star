@@ -5,8 +5,6 @@ from django.dispatch import receiver
 
 from phonenumber_field.modelfields import PhoneNumberField
 
-from helpers.utils import send_application_shortlisted_mail, send_application_interview_mail, \
-    send_application_accepted_mail, send_application_rejected_mail
 from jobs.models import Job
 
 # Create your models here.
@@ -177,18 +175,18 @@ class ApplicationStatus(models.Model):
         unique_together = ('application', 'status', 'activity',)
 
 
-@receiver(post_save, sender=ApplicationStatus)
-def send_status_email(sender, instance, created, **kwargs):
-    if created:
-        applicant = instance.application.applicant
-        if instance.status == 'shortlisted':
-            send_application_shortlisted_mail(applicant)
-        if instance.status == 'invited':
-            send_application_interview_mail(applicant)
-        if instance.status == 'accepted':
-            send_application_accepted_mail(applicant)
-        if instance.status == 'rejected':
-            send_application_rejected_mail(applicant)
+# @receiver(post_save, sender=ApplicationStatus)
+# def send_status_email(sender, instance, created, **kwargs):
+#     if created:
+#         applicant = instance.application.applicant
+#         if instance.status == 'shortlisted':
+#             send_application_shortlisted_mail(applicant)
+#         if instance.status == 'invited':
+#             send_application_interview_mail(applicant)
+#         if instance.status == 'accepted':
+#             send_application_accepted_mail(applicant)
+#         if instance.status == 'rejected':
+#             send_application_rejected_mail(applicant)
 
 
 EMAIL_TYPE_CHOICES = (
