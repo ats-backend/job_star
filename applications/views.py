@@ -8,10 +8,12 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from helpers.utils import send_application_success_mail
+from helpers.utils import (
+    send_application_shortlisted_mail, send_application_interview_mail,
+    send_application_accepted_mail, send_application_rejected_mail
+)
 from job_star.encryption import encrypt_data
-from jobs.models import Job
-from permissions.permissions import IsAuthenticated
+
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
@@ -130,6 +132,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
             data = {
                 'application_status': application_status.status
             }
+            send_application_shortlisted_mail(application.applicant)
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(
             data="No such application exists!",
@@ -168,6 +171,7 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
             data = {
                 'application_status': application_status.status
             }
+            send_application_interview_mail(application.applicant)
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(
             data="No such application exists!",
@@ -212,6 +216,7 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
                     data = {
                         'application_status': application_status.status
                     }
+                    send_application_accepted_mail(application.applicant)
                     return Response(data=data, status=status.HTTP_200_OK)
                 return Response(
                     data="Application status is already set to accepted",
@@ -272,6 +277,7 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
             data = {
                 'application_status': application_status.status
             }
+            send_application_rejected_mail(application.applicant)
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(
             data="No such application exists!",
