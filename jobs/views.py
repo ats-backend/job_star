@@ -60,15 +60,16 @@ class CourseUpdateAPIView(generics.UpdateAPIView):
 
 class CourseDeleteAPIView(GenericAPIView):
     serializer_class = CoursesSerializers
+    queryset = Courses.objects.all()
 
-    def post(self, request, pk):
-        course = get_object_or_404(Courses, id=pk)
+    def post(self, request, *args, **kwargs):
+        course = self.get_object()
         course.is_deleted = not course.is_deleted
         course.save()
 
         if course.is_deleted:
             return Response(
-                data=f"{course.title} is dis-active",
+                data=f"{course.title} is inactive",
                 status=status.HTTP_200_OK
             )
         return Response(
@@ -120,11 +121,11 @@ class CohortDestroyAPIView(GenericAPIView):
 
         if cohort.is_deleted:
             return Response(
-                data="Job is dis-active",
+                data="Cohort is inactive",
                 status=status.HTTP_200_OK
             )
         return Response(
-            data="Job is active",
+            data="Cohort is active",
             status=status.HTTP_200_OK
         )
 
@@ -209,6 +210,6 @@ class JobDestroyAPIView(GenericAPIView):
                 status=status.HTTP_200_OK
             )
         return Response(
-            data="Job is dis-active",
+            data="Job is inactive",
             status=status.HTTP_200_OK
         )
