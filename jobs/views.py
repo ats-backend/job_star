@@ -33,7 +33,7 @@ class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
 
     def get_queryset(self):
-        return Courses.objects.filter(is_delete=False)
+        return Courses.objects.filter(is_deleted=False)
 
 
 class CourseDetailAPIView(APIView):
@@ -63,10 +63,10 @@ class CourseDeleteAPIView(GenericAPIView):
 
     def post(self, request, pk):
         course = get_object_or_404(Courses, id=pk)
-        course.is_delete = not course.is_delete
+        course.is_deleted = not course.is_delete
         course.save()
 
-        if course.is_delete:
+        if course.is_deleted:
             return Response(
                 data=f"{course.title} is dis-active",
                 status=status.HTTP_200_OK

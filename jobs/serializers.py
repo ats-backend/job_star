@@ -51,6 +51,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         model = Courses
         fields = (
             'title',
+            'image',
             'description',
             'active_cohort',
             'open_job'
@@ -65,6 +66,7 @@ class CoursesSerializers(serializers.ModelSerializer):
         fields = (
             'url',
             'title',
+            'image',
             'description'
         )
 
