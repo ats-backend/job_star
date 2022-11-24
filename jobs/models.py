@@ -21,7 +21,7 @@ class Courses(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to='course/',
-        required=False, null=True,
+        null=True,
         blank=True,
         validators=[FileExtensionValidator(
             allowed_extensions=['jpg', 'png', 'jpeg']

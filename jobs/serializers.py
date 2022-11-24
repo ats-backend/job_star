@@ -248,24 +248,5 @@ class JobSerializers(serializers.ModelSerializer):
         extra_kwargs = {
             'created_by': {'required': True}
         }
-    #
-    # def create(self, validated_data):
-    #     course_title = validated_data.pop('course')
-    #     cohort = validated_data.pop('cohort')
-    #     print(validated_data)
-    #     job_instance = Job.objects.create(**validated_data)
-    #     job = Job.
-    #     for title in course_title:
-    #         course = Courses.objects.filter(
-    #             title__iexact=title.get('title')
-    #         ).first()
-    #         job_instance.course = course
-    #         job_instance.save()
-    #
-    #     for coh in cohort:
-    #         new_cohort = Cohort.objects.filter(
-    #             name__iexact=coh.get('name')
-    #         ).first()
-    #         job_instance.cohort = new_cohort
-    #         job_instance.save()
+
 
