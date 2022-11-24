@@ -54,8 +54,8 @@ class Cohort(models.Model):
     courses = models.ManyToManyField('Courses')
     slug = models.SlugField(null=True, blank=True)
     application_start_date = models.DateTimeField()
-    application_end_date = models.DateTimeField()
-    start_date = models.DateTimeField()
+    application_end_date = models.DateField()
+    start_date = models.DateField()
     end_date = models.DateTimeField()
     is_deleted = models.BooleanField(default=False)
 
