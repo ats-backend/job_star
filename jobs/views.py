@@ -12,7 +12,8 @@ from .models import Job, Cohort, Courses
 from .serializers import (
             JobSerializers, JobListSerializers,
             CoursesSerializers, CohortSerializers,
-            CourseDetailSerializer, CohortCountDownSerializer
+            CourseDetailSerializer, CohortCountDownSerializer,
+            CohortUpdateSerializer
             )
 
 from renderers.renderers import CustomRender
@@ -95,7 +96,7 @@ class CohortDetailAPIView(generics.RetrieveAPIView):
 
 
 class CohortUpdateAPIView(generics.UpdateAPIView):
-    serializer_class = CohortSerializers
+    serializer_class = CohortUpdateSerializer
     queryset = Cohort.objects.all()
 
 
