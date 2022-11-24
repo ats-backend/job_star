@@ -9,6 +9,8 @@ from .views import (CourseDetailAPIView,
                     CohortCreationAPIView, CohortDetailAPIView,
                     CohortDestroyAPIView, CohortCountDownAPIView)
 
+from applications.views import ApplicationListAPIView
+
 app_name = 'job'
 
 urlpatterns = [
@@ -33,5 +35,6 @@ urlpatterns = [
     path('<int:pk>/detail', JobDetailAPIView.as_view(), name='job-detail'),
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
     path('<int:pk>/delete', JobDestroyAPIView.as_view(), name='job-delete'),
+    path('<int:pk>/applications', ApplicationListAPIView.as_view(), name='applications'),
 
 ]

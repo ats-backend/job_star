@@ -103,7 +103,7 @@ class Job(models.Model):
         return self.cohort
 
     def application_url(self):
-        return reverse('applications:applications', args=[self.id])
+        return reverse('job:applications', args=[self.id])
 
 
 @receiver(pre_save, sender=Job)
