@@ -180,17 +180,19 @@ class ApplicationStatus(models.Model):
 @receiver(post_save, sender=ApplicationStatus)
 def send_status_email(sender, instance, created, **kwargs):
     if created:
+        applicant = instance.application.applicant
         if instance.status == 'shortlisted':
-            send_application_shortlisted_mail(instance)
+            send_application_shortlisted_mail(applicant)
         if instance.status == 'invited':
-            send_application_interview_mail(instance)
+            send_application_interview_mail(applicant)
         if instance.status == 'accepted':
-            send_application_accepted_mail(instance)
+            send_application_accepted_mail(applicant)
         if instance.status == 'rejected':
-            send_application_rejected_mail(instance)
+            send_application_rejected_mail(applicant)
 
 
 EMAIL_TYPE_CHOICES = (
+    ('completed_application', 'Completed Application'),
     ('shortlisted', 'Shortlisted'),
     ('invited', 'Invited for Interview'),
     ('accepted', 'Accepted'),

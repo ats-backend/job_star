@@ -46,6 +46,13 @@ class ApplicantApplicationsSerializer(serializers.ModelSerializer):
         )
 
 
+class ApplicantApplicationDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Applicant
+        exclude = ('id', 'is_deleted',)
+
+
 class ApplicantSerializer(serializers.ModelSerializer):
     applications = ApplicantApplicationsSerializer(
         many=True,
@@ -141,7 +148,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):
-    applicant = ApplicantSerializer(read_only=True)
+    applicant = ApplicantApplicationDetailSerializer(read_only=True)
 
     class Meta:
         model = Application
