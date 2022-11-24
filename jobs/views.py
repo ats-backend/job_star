@@ -40,7 +40,7 @@ class CoursesListAPIView(generics.ListAPIView):
 
 class CourseListOnlyAPIView(generics.ListAPIView):
     serializer_class = CourseOnlySerializer
-    queryset = Courses.active_courses.aLL()
+    queryset = Courses.active_courses.all()
 
 
 class CohortListOnlyAPIView(generics.ListAPIView):
