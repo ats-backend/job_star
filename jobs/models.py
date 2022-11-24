@@ -22,10 +22,7 @@ class Courses(models.Model):
     image = models.ImageField(
         upload_to='course/',
         null=True,
-        blank=True,
-        validators=[FileExtensionValidator(
-            allowed_extensions=['jpg', 'png', 'jpeg']
-        )],
+        blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
