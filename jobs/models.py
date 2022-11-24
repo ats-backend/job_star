@@ -5,7 +5,14 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
 
+
 from rest_framework.reverse import reverse
+
+
+class GeneralManager(models.Manager):
+    def get_queryset(self):
+        return super(GeneralManager, self).get_queryset(
+        ).filter(is_deleted=False,)
 
 
 class Courses(models.Model):
@@ -13,7 +20,10 @@ class Courses(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='course/images', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_delete = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+
+    active_courses = GeneralManager()
+    objects = models.Manager()
 
     class Meta:
         ordering = ('-created_at',)
@@ -35,7 +45,7 @@ class Courses(models.Model):
 
 
 class Cohort(models.Model):
-    name = models.CharField(max_length=250, verbose_name='Batch')
+    name = models.CharField(max_length=250, unique=True, verbose_name='Batch')
     courses = models.ManyToManyField('Courses')
     slug = models.SlugField(null=True, blank=True)
     application_start_date = models.DateTimeField()
@@ -45,7 +55,7 @@ class Cohort(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('-start_date',)
+        ordering = ('-application_start_date',)
 
     def __str__(self):
         return self.name
@@ -57,32 +67,34 @@ def slugify_title(sender, **kwargs):
     kwargs['instance'].slug = slug
 
 
-class JobManager(models.Manager):
-    def get_queryset(self):
-        return super(JobManager, self).get_queryset(
-        ).filter(is_delete=False,
-                 deadline__gt=timezone.now()
-                 )
-
-
 class Job(models.Model):
-    title = models.CharField(max_length=200, null=True, blank=True)
+    title = models.CharField(
+        max_length=200,
+        null=True, blank=True,
+        unique=True
+    )
     slug = models.SlugField(null=True, blank=True)
-    course = models.OneToOneField('Courses',
-                                  on_delete=models.CASCADE,
-                                  null=True, blank=True, related_name='jobs')
-    cohort = models.ForeignKey('Cohort', on_delete=models.CASCADE,
-                               related_name='jobs')
+    course = models.ForeignKey(
+        'Courses',
+        on_delete=models.CASCADE,
+        null=True, blank=True, related_name='jobs'
+    )
+    cohort = models.ForeignKey(
+        'Cohort', on_delete=models.CASCADE,
+        related_name='jobs'
+    )
     requirement = models.TextField()
     date_posted = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=200, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = models.Manager()
-    active_jobs = JobManager()
+    active_jobs = GeneralManager()
 
     class Meta:
         ordering = ('-date_posted',)
+        unique_together = ('course', 'cohort')
 
     def __str__(self):
         return self.title

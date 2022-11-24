@@ -91,7 +91,7 @@ class CohortCountDownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cohort
-        fields = ('end_date',)
+        fields = ('application_end_date',)
 
 
 class CohortSerializers(serializers.ModelSerializer):
@@ -104,6 +104,45 @@ class CohortSerializers(serializers.ModelSerializer):
             'application_start_date',
             'application_end_date', 'courses',
         )
+
+    def validate_application_start_date(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError(
+                "Cohort's application start date must be a current or future time"
+            )
+        return value
+
+    def validate_application_end_date(self, value):
+        if value <= timezone.now():
+            raise serializers.ValidationError(
+                "Cohort's application end date must be a future time"
+            )
+        cohort = Cohort.objects.filter(
+            application_end_date__gte=timezone.now()
+        ).exists()
+        if cohort:
+            raise serializers.ValidationError(
+                "A cohort with an active application already exists"
+            )
+        return value
+
+
+    def validate(self, attrs):
+        cohort_start_date = attrs['start_date']
+        cohort_end_date = attrs['end_date']
+        cohort_application_start_date = attrs['application_start_date']
+        cohort_application_end_date = attrs['application_end_date']
+
+        if cohort_end_date <= cohort_start_date:
+            raise serializers.ValidationError(
+                'Cohort end date must be greater than start date'
+            )
+
+        if cohort_application_end_date <= cohort_application_start_date:
+            raise serializers.ValidationError(
+                'Cohort application end date must be greater than start date'
+            )
+        return attrs
 
     def create(self, validated_data):
         courses = validated_data.pop('courses')
@@ -146,14 +185,6 @@ class CohortSerializers(serializers.ModelSerializer):
                 'An error occurred'
             })
 
-    def validate(self, attrs):
-        cohort = Cohort.objects.values_list('name')
-        if any(attrs['name'] in title for title in cohort):
-            raise serializers.ValidationError({
-                'Name: A Cohort with that name is already exist'
-            })
-
-        return attrs
 
 
 class JobListSerializers(serializers.ModelSerializer):
@@ -193,22 +224,46 @@ class NestedCoursesSerializer(serializers.ModelSerializer):
             'created_at', 'is_delete'
         )
 
+class CohortNextedSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Cohort
+        fields = (
+            'name',
+        )
+
 
 class JobSerializers(serializers.ModelSerializer):
-    course = CoursesNextedSerializers(read_only=True)
-    cohort = NextedCohortSerializer(read_only=True)
+    # course = CoursesNextedSerializers(many=True)
+    # cohort = CohortNextedSerializer(many=True)
 
     class Meta:
         model = Job
         fields = (
             'id', 'title', 'course', 'cohort',
-            'requirement', 'date_posted'
+            'requirement', 'date_posted', 'created_by'
         )
+        extra_kwargs = {
+            'created_by': {'required': True}
+        }
+    #
+    # def create(self, validated_data):
+    #     course_title = validated_data.pop('course')
+    #     cohort = validated_data.pop('cohort')
+    #     print(validated_data)
+    #     job_instance = Job.objects.create(**validated_data)
+    #     job = Job.
+    #     for title in course_title:
+    #         course = Courses.objects.filter(
+    #             title__iexact=title.get('title')
+    #         ).first()
+    #         job_instance.course = course
+    #         job_instance.save()
+    #
+    #     for coh in cohort:
+    #         new_cohort = Cohort.objects.filter(
+    #             name__iexact=coh.get('name')
+    #         ).first()
+    #         job_instance.cohort = new_cohort
+    #         job_instance.save()
 
-    # def validate(self, attrs):
-    #     if attrs['deadline'] < utc.localize(datetime.datetime.now()):
-    #         raise serializers.ValidationError({
-    #             'date_posted': "creation date and deadline can not be greater than"
-    #                            "today's date",
-    #         })
-    #     return attrs

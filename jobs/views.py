@@ -2,7 +2,7 @@ from django.forms import model_to_dict
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, Http404
 
-from rest_framework.generics import (GenericAPIView)
+from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -102,7 +102,7 @@ class CohortCountDownAPIView(GenericAPIView):
 
     def get(self, request):
         latest_cohort = Cohort.objects.filter(
-            end_date__gt=timezone.now(),
+            application_end_date__gt=timezone.now(),
             is_deleted=False
         )
         serializer = CohortCountDownSerializer(latest_cohort, many=True)
@@ -132,9 +132,9 @@ class CohortDestroyAPIView(GenericAPIView):
 class JobListCreateAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
-        active_jobs = Job.objects.filter(
-            is_deleted=False,
-        ).all()
+        active_jobs = Job.active_jobs.filter(
+            cohort__application_end_date__gt=timezone.now()
+        )
         serializer = JobListSerializers(
             active_jobs,
             many=True,
@@ -150,8 +150,6 @@ class JobListCreateAPIView(APIView):
         serializer = JobSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            serializer.save()
-            print(serializer.data)
             return Response(data=serializer.data,
                             status=status.HTTP_201_CREATED
                             )

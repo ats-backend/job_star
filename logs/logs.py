@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 class ResponseLoggingMiddleware(MiddlewareMixin):
     req = None
+    action = None
 
     def basicConfig(self, **messages):
 
@@ -15,6 +16,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
             handler = file.write(
                 f'Time: {messages["time"]}' + "  "
                 f'Method:{self.req.method}' + "  "
+                f"Action:{self.req.body}" + "  "
                 f'Status_code:{messages["method"]}' + " "
                 f"Endpoint: {messages['endpoint']}\n"
             )
