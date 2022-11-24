@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.generics import (
     CreateAPIView, GenericAPIView, ListCreateAPIView,
-    ListAPIView, RetrieveUpdateAPIView
+    ListAPIView, RetrieveUpdateAPIView, RetrieveAPIView, UpdateAPIView
 )
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
@@ -45,6 +45,7 @@ class EncryptionMixin(GenericAPIView):
 
 class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
+    parser_classes = (MultiPartParser, JSONParser,)
 
     def get_queryset(self):
         if self.kwargs.get('job_id'):
@@ -73,7 +74,6 @@ class CreateApplicationAPIView(CreateAPIView):
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            send_application_success_mail(applicant)
             return Response(
                 data=serializer.data,
                 status=status.HTTP_201_CREATED
@@ -84,7 +84,7 @@ class CreateApplicationAPIView(CreateAPIView):
         )
 
 
-class ApplicationDetailAPIView(RetrieveUpdateAPIView):
+class ApplicationDetailAPIView(RetrieveAPIView):
     serializer_class = ApplicationDetailSerializer
     queryset = Application.objects.all()
 

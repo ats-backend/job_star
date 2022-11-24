@@ -55,7 +55,10 @@ class ApplicantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Applicant
         exclude = ('id',)
-        # fields = ('first_name')
+
+        extra_kwargs = {
+            'resume': {'required': True}
+        }
 
     def validate_gender(self, value):
         # check if the applicant's gender is either male or female

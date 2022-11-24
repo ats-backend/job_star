@@ -1,3 +1,4 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -33,8 +34,20 @@ class Applicant(models.Model):
     date_of_birth = models.DateField()
     country_of_origin = models.CharField(max_length=50)
     current_location = models.CharField(max_length=50)
-    resume = models.FileField(null=True, blank=True)
-    attachments = models.FileField(null=True, blank=True)
+    resume = models.FileField(
+        upload_to='resume',
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'docx', 'doc']
+        )],
+        null=True, blank=True
+    )
+    other_attachment = models.FileField(
+        upload_to='other_attachments',
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'docx', 'doc', 'jpg', 'jpeg', 'png']
+        )],
+        null=True, blank=True
+    )
     cover_letter = models.TextField()
     qualification = models.CharField(max_length=20)
     years_of_experience = models.IntegerField(default=0)

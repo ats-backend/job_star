@@ -5,4 +5,6 @@ __pycache__/
 .env
 venv
 *migrations
-.logs
+*.log
+job_star/media/
+job_star/static/

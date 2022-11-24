@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('api/jobs/<int:job_id>/applications', include('applications.urls')),
+    # path('api/jobs/<int:job_id>/applications', include('applications.urls')),
     path('api/jobs/', include('jobs.urls')),
     path('api/applications/', include('applications.urls')),
     # path('logs/', include('logs.urls')),
