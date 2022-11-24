@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -18,7 +19,14 @@ class GeneralManager(models.Manager):
 class Courses(models.Model):
     title = models.CharField(max_length=250, verbose_name='Course Title')
     description = models.TextField(null=True, blank=True)
-    image = models.ImageField(upload_to='course/images', null=True, blank=True)
+    image = models.ImageField(
+        upload_to='course/',
+        required=False, null=True,
+        blank=True,
+        validators=[FileExtensionValidator(
+            allowed_extensions=['jpg', 'png', 'jpeg']
+        )],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
