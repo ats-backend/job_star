@@ -7,7 +7,9 @@ from .views import (CourseDetailAPIView,
                     JobUpdateAPIView, JobDestroyAPIView,
                     CohortListAPIView, CohortUpdateAPIView,
                     CohortCreationAPIView, CohortDetailAPIView,
-                    CohortDestroyAPIView, CohortCountDownAPIView)
+                    CohortDestroyAPIView, CohortCountDownAPIView,
+                    CohortListOnlyAPIView,CourseListOnlyAPIView
+                    )
 
 from applications.views import ApplicationListAPIView
 
@@ -20,11 +22,14 @@ urlpatterns = [
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<int:pk>/edit', CourseUpdateAPIView.as_view()),
     path('courses/<int:pk>/delete', CourseDeleteAPIView.as_view()),
+    path('courses-with-id', CourseListOnlyAPIView.as_view()),
+
 
     # Cohort urls
     path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
     path('cohort/create', CohortCreationAPIView.as_view(), name='cohort-create'),
     path('cohort/<int:pk>', CohortDetailAPIView.as_view()),
+    path('cohorts-with-id', CohortListOnlyAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
     path('latest-cohort', CohortCountDownAPIView.as_view()),
@@ -35,6 +40,6 @@ urlpatterns = [
     path('<int:pk>/detail', JobDetailAPIView.as_view(), name='job-detail'),
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
     path('<int:pk>/delete', JobDestroyAPIView.as_view(), name='job-delete'),
-    path('<int:pk>/applications', ApplicationListAPIView.as_view(), name='applications'),
+    path('<int:job_id>/applications', ApplicationListAPIView.as_view(), name='applications'),
 
 ]

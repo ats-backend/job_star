@@ -18,6 +18,14 @@ class CoursesNextedSerializers(serializers.ModelSerializer):
             'title',
         )
 
+class TotalCourseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Courses
+        fields = (
+            'number_of_course'
+        )
+
 
 class NextedCohortSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +36,28 @@ class NextedCohortSerializer(serializers.ModelSerializer):
             'end_date',
         )
 
+class CourseOnlySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Courses
+        fields = (
+            'id', 'title'
+        )
+        extra_kwargs = {
+            "title":{"read_only":True}
+        }
+
+
+class CohortOnlySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Cohort
+        fields = (
+            'id', 'name'
+        )
+        extra_kwargs = {
+            'name': {"read_only": True}
+        }
 
 class NextedJobSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,6 +135,7 @@ class CohortSerializers(serializers.ModelSerializer):
             'name', 'start_date', 'end_date',
             'application_start_date',
             'application_end_date', 'courses',
+            'number_of_courses'
         )
 
     def validate_application_start_date(self, value):
@@ -159,33 +190,33 @@ class CohortSerializers(serializers.ModelSerializer):
         cohort_instance.save()
         return cohort_instance
 
-    def update(self, instance, validated_data):
-        courses = validated_data.pop('courses')
-        instance.name = validated_data.get('name', instance.name)
-        instance.application_start_date = validated_data.get(
-            'application_start_date', instance.application_start_date)
-        instance.application_end_date = validated_data.get(
-            'application_start_end', instance.application_end_date)
-        instance.start_date = validated_data.get(
-            'start_date', instance.start_date)
-        instance.end_date = validated_data.get(
-            'end_date', instance.end_date)
-
-        courses_id = []
-
-        try:
-            for course in courses:
-                for d in course:
-                    course_id = Courses.objects.get(title=(course[d]))
-                    courses_id.append(course_id.pk)
-                    print(courses_id)
-                    instance.courses.add(courses_id[0])
-            instance.save()
-            return instance
-        except:
-            raise Exception({
-                'An error occurred'
-            })
+    # def update(self, instance, validated_data):
+    #     courses = validated_data.pop('courses')
+    #     instance.name = validated_data.get('name', instance.name)
+    #     instance.application_start_date = validated_data.get(
+    #         'application_start_date', instance.application_start_date)
+    #     instance.application_end_date = validated_data.get(
+    #         'application_start_end', instance.application_end_date)
+    #     instance.start_date = validated_data.get(
+    #         'start_date', instance.start_date)
+    #     instance.end_date = validated_data.get(
+    #         'end_date', instance.end_date)
+    #
+    #     courses_id = []
+    #
+    #     try:
+    #         for course in courses:
+    #             for d in course:
+    #                 course_id = Courses.objects.get(title=(course[d]))
+    #                 courses_id.append(course_id.pk)
+    #                 print(courses_id)
+    #                 instance.courses.add(courses_id[0])
+    #         instance.save()
+    #         return instance
+    #     except:
+    #         raise Exception({
+    #             'An error occurred'
+    #         })
 
 class CohortUpdateSerializer(serializers.ModelSerializer):
     courses = CoursesNextedSerializers(many=True)
