@@ -50,7 +50,7 @@ class Courses(models.Model):
 
 
 class Cohort(models.Model):
-    name = models.CharField(max_length=250, unique=True, verbose_name='Batch')
+    name = models.CharField(max_length=250, unique=True)
     courses = models.ManyToManyField('Courses')
     slug = models.SlugField(null=True, blank=True)
     application_start_date = models.DateTimeField()
