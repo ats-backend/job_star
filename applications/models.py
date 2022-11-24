@@ -204,7 +204,7 @@ class ApplicationEmail(models.Model):
     body = models.TextField()
     type = models.CharField(
         choices=EMAIL_TYPE_CHOICES,
-        max_length=20
+        max_length=25
     )
     created_on = models.DateTimeField(auto_now=True)
     last_modified = models.DateTimeField(auto_now_add=True)
