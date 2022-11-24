@@ -13,7 +13,8 @@ from .serializers import (
             JobSerializers, JobListSerializers,
             CoursesSerializers, CohortSerializers,
             CourseDetailSerializer, CohortCountDownSerializer,
-            CohortUpdateSerializer
+            CohortUpdateSerializer, CourseOnlySerializer,
+            CohortOnlySerializer,
             )
 
 from renderers.renderers import CustomRender
@@ -35,6 +36,16 @@ class CoursesListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Courses.objects.filter(is_deleted=False)
+
+
+class CourseListOnlyAPIView(generics.ListAPIView):
+    serializer_class = CourseOnlySerializer
+    queryset = Courses.active_courses.aLL()
+
+
+class CohortListOnlyAPIView(generics.ListAPIView):
+    serializer_class = CohortOnlySerializer
+    queryset = Cohort.objects.all()
 
 
 class CourseDetailAPIView(APIView):

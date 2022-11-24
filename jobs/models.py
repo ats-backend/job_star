@@ -65,6 +65,9 @@ class Cohort(models.Model):
     def __str__(self):
         return self.name
 
+    def number_of_courses(self):
+        return self.courses.count()
+
 
 @receiver(pre_save, sender=Cohort)
 def slugify_title(sender, **kwargs):
