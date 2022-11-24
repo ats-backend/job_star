@@ -187,6 +187,33 @@ class CohortSerializers(serializers.ModelSerializer):
                 'An error occurred'
             })
 
+class CohortUpdateSerializer(serializers.ModelSerializer):
+    courses = CoursesNextedSerializers(many=True)
+
+    class Meta:
+        model = Cohort
+        fields = (
+            'name', 'start_date', 'end_date',
+            'application_start_date',
+            'application_end_date', 'courses',
+        )
+
+    def validate(self, attrs):
+        cohort_start_date = attrs['start_date']
+        cohort_end_date = attrs['end_date']
+        cohort_application_start_date = attrs['application_start_date']
+        cohort_application_end_date = attrs['application_end_date']
+
+        if cohort_end_date <= cohort_start_date:
+            raise serializers.ValidationError(
+                'Cohort end date must be greater than start date'
+            )
+
+        if cohort_application_end_date <= cohort_application_start_date:
+            raise serializers.ValidationError(
+                'Cohort application end date must be greater than start date'
+            )
+        return attrs
 
 
 class JobListSerializers(serializers.ModelSerializer):
