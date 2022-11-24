@@ -63,7 +63,7 @@ class CourseDeleteAPIView(GenericAPIView):
 
     def post(self, request, pk):
         course = get_object_or_404(Courses, id=pk)
-        course.is_deleted = not course.is_delete
+        course.is_deleted = not course.is_deleted
         course.save()
 
         if course.is_deleted:
