@@ -192,6 +192,7 @@ def send_status_email(sender, instance, created, **kwargs):
 
 
 EMAIL_TYPE_CHOICES = (
+    ('completed_application', 'Completed Application'),
     ('shortlisted', 'Shortlisted'),
     ('invited', 'Invited for Interview'),
     ('accepted', 'Accepted'),
