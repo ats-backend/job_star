@@ -102,7 +102,8 @@ class CohortCountDownAPIView(GenericAPIView):
 
     def get(self, request):
         latest_cohort = Cohort.objects.filter(
-            application_end_date__gt=timezone.now()
+            end_date__gt=timezone.now(),
+            is_deleted=False
         )
         serializer = CohortCountDownSerializer(latest_cohort, many=True)
         return Response(data=serializer.data,
