@@ -30,33 +30,3 @@ class CohortsApiTest(TestCase):
         serializer = CohortSerializers(cohorts, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
-
-
-    def test_create_cohort_successful(self):
-        payload = {
-            "name": "New Batch is now available",
-            "start_date": "2022-11-30T12:53:23+01:00",
-            "end_date": "2022-12-31T12:53:32+01:00",
-            "application_start_date": "2022-11-07T12:52:59+01:00",
-            "application_end_date": "2022-12-25T12:53:10+01:00",
-            "courses": [
-                {
-                    "title": "Product Management"
-                },
-                {
-                    "title": "Front-end"
-                },
-                {
-                    "title": "Back-end"
-                }
-                ]
-            }
-        self.client.post(COHORT_CREATE_URL, payload)
-
-
-        exist = Cohort.objects.filter(
-            end_date__gt=timezone.now(),
-            is_deleted=False
-        ).exists()
-        # return boolean true or false value
-        self.assertTrue(exist)
