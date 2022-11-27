@@ -14,7 +14,7 @@ from .serializers import (
             CoursesSerializers, CohortSerializers,
             CourseDetailSerializer, CohortCountDownSerializer,
             CohortUpdateSerializer, CourseOnlySerializer,
-            CohortOnlySerializer,
+            CohortOnlySerializer
             )
 
 from renderers.renderers import CustomRender
@@ -24,6 +24,11 @@ from permissions.permissions import IsAuthenticated
 class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+
+    def perform_create(self, serializer):
+        assessment = serializer.validated_data
+        print(assessment)
+        # assessment.save(commit=False)
 
 
 class AdminCourseDetailAPIView(generics.RetrieveAPIView):
@@ -195,7 +200,7 @@ class JobUpdateAPIView(APIView):
         except Job.DoesNotExist:
             raise Http404
 
-    def put(self, request, pk, ):
+    def put(self, request, pk):
         job = self.get_object(pk)
         serializer = JobSerializers(job, data=request.data)
         if serializer.is_valid():
@@ -225,3 +230,4 @@ class JobDestroyAPIView(GenericAPIView):
             data="Job is inactive",
             status=status.HTTP_200_OK
         )
+    

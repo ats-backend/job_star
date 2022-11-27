@@ -184,6 +184,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
     "http://assessbk.afexats.com",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
