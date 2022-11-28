@@ -11,9 +11,10 @@ from .models import Job, Cohort, Courses
 from applications.models import Application
 
 
-class CoursesNextedSerializers(serializers.ModelSerializer):
+class CoursesNextedSerializers(serializers.Serializer):
+    title = serializers.CharField()
     class Meta:
-        model = Courses
+        # model = Courses
         fields = (
             'title',
         )
@@ -138,7 +139,7 @@ class CohortCountDownSerializer(serializers.ModelSerializer):
 
 
 class CohortSerializers(serializers.ModelSerializer):
-    courses = CoursesNextedSerializers(many=True)
+    courses = CoursesNextedSerializers(many=True, read_only=True)
     url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
