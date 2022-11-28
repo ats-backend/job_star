@@ -22,7 +22,6 @@ urlpatterns = [
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<int:pk>/edit', CourseUpdateAPIView.as_view()),
     path('courses/<int:pk>/delete', CourseDeleteAPIView.as_view()),
-    path('course-options', CourseListOnlyAPIView.as_view()),
 
 
     # Cohort urls
@@ -30,6 +29,7 @@ urlpatterns = [
     path('cohort/create', CohortCreationAPIView.as_view(), name='cohort-create'),
     path('cohort/<int:pk>', CohortDetailAPIView.as_view(), name='cohort-detail'),
     path('cohort-options', CohortListOnlyAPIView.as_view()),
+    path('cohort/<int:cohort_id>/course-options', CourseListOnlyAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
     path('latest-cohort', CohortCountDownAPIView.as_view()),

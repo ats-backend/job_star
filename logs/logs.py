@@ -24,7 +24,6 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
             return handler
 
     def process_response(self, request, response):
-        self.req = request
         try:
 
             log.info(self.basicConfig(

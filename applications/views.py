@@ -345,35 +345,35 @@ class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
 
 class PendingApplicationListAPIView(ListAPIView):
     queryset = Application.active_objects.filter(
-        application_status__status='pending'
+        status='pending'
     )
     serializer_class = ApplicationSerializer
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
     queryset = Application.active_objects.filter(
-        application_status__status='shortlisted'
+        status='shortlisted'
     )
     serializer_class = ApplicationSerializer
 
 
 class InvitedApplicationListAPIView(ListAPIView):
     queryset = Application.active_objects.filter(
-        application_status__status='invited'
+        status='invited'
     )
     serializer_class = ApplicationSerializer
 
 
 class AcceptedApplicationListAPIView(ListAPIView):
     queryset = Application.active_objects.filter(
-        application_status__status='accepted'
+        status='accepted'
     )
     serializer_class = ApplicationSerializer
 
 
 class RejectedApplicationListAPIView(ListAPIView):
     queryset = Application.active_objects.filter(
-        application_status__status='rejected'
+        status='rejected'
     )
     serializer_class = ApplicationSerializer
 
