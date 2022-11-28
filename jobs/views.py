@@ -147,22 +147,24 @@ class CohortDestroyAPIView(GenericAPIView):
         )
 
 
-class JobListCreateAPIView(APIView):
-
-    def get(self, request, *args, **kwargs):
-        active_jobs = Job.active_jobs.filter(
+class JobListCreateAPIView(generics.ListAPIView):
+    queryset = Job.active_jobs.filter(
             cohort__application_end_date__gt=timezone.now()
         )
-        serializer = JobListSerializers(
-            active_jobs,
-            many=True,
-            context={'request': request}
-        )
-        print(serializer.data)
-        return Response(
-            data=serializer.data,
-            status=status.HTTP_200_OK
-        )
+    serializer_class = JobSerializers
+
+    # def get(self, request, *args, **kwargs):
+    #     active_jobs =
+    #     serializer = JobListSerializers(
+    #         active_jobs,
+    #         many=True,
+    #         context={'request': request}
+    #     )
+    #     print(serializer.data)
+    #     return Response(
+    #         data=serializer.data,
+    #         status=status.HTTP_200_OK
+    #     )
 
     def post(self, request):
         serializer = JobSerializers(data=request.data)

@@ -129,15 +129,26 @@ class CohortCountDownSerializer(serializers.ModelSerializer):
 
 class CohortSerializers(serializers.ModelSerializer):
     courses = CoursesNextedSerializers(many=True)
+    url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Cohort
         fields = (
+            'url',
             'name', 'start_date', 'end_date',
             'application_start_date',
             'application_end_date', 'courses',
             'number_of_courses'
         )
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse('job:cohort-detail',
+                       kwargs={'pk': obj.pk},
+                       request=request
+                       )
 
     def validate_application_start_date(self, value):
         if value < timezone.now():
@@ -274,15 +285,12 @@ class CohortUpdateSerializer(serializers.ModelSerializer):
             })
 
 class JobListSerializers(serializers.ModelSerializer):
-    # application = serializers.HyperlinkedIdentityField(
-    #     view_name='applications:applications',
-    #     lookup_field='pk',
-    #     read_only=True
-    # )
-    # job_id = serializers.SerializerMethodField(read_only=True)
+    url = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Job
         fields = (
+            'url',
             'id',
             'title',
             'date_posted',
@@ -290,8 +298,14 @@ class JobListSerializers(serializers.ModelSerializer):
             'application_url'
                   )
 
-    # def job_id(self):
-    #     return Job.active_jobs.
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse('job:job-detail',
+                       kwargs={'pk': obj.pk},
+                       request=request
+                       )
 
 
 class NestedCohortSerializer(serializers.ModelSerializer):
@@ -320,8 +334,6 @@ class CohortNextedSerializer(serializers.ModelSerializer):
 
 
 class JobSerializers(serializers.ModelSerializer):
-    # course = CoursesNextedSerializers(many=True)
-    # cohort = CohortNextedSerializer(many=True)
 
     class Meta:
         model = Job
@@ -332,5 +344,6 @@ class JobSerializers(serializers.ModelSerializer):
         extra_kwargs = {
             'created_by': {'required': True}
         }
+
 
 
