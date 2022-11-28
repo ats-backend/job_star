@@ -28,7 +28,7 @@ urlpatterns = [
     # Cohort urls
     path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
     path('cohort/create', CohortCreationAPIView.as_view(), name='cohort-create'),
-    path('cohort/<int:pk>', CohortDetailAPIView.as_view()),
+    path('cohort/<int:pk>', CohortDetailAPIView.as_view(), name='cohort-detail'),
     path('cohort-id', CohortListOnlyAPIView.as_view()),
     path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
     path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
