@@ -17,7 +17,10 @@ class GeneralManager(models.Manager):
 
 
 class Courses(models.Model):
-    title = models.CharField(max_length=250, verbose_name='Course Title')
+    title = models.CharField(
+        max_length=250, verbose_name='Course Title',
+        unique=True
+    )
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to='course/',

@@ -1,3 +1,11 @@
 from django.test import TestCase
+from django.urls import reverse
 
-# Create your tests here.
+from rest_framework import APITestCase
+
+
+
+class TestListCreateAPIView(APITestCase):
+
+    def test_list_of_courses(self):
+        response = self.client.get(reverse())
