@@ -49,7 +49,6 @@ class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
 
     def get_queryset(self):
-        # endpoint = "http://assessbk.afexats.com/api/assessment/application-type"
         # get_response = requests.get(endpoint)
         # print(get_response.json())
         return Courses.objects.filter(is_deleted=False)
@@ -57,7 +56,15 @@ class CoursesListAPIView(generics.ListAPIView):
 
 class CourseListOnlyAPIView(generics.ListAPIView):
     serializer_class = CourseOnlySerializer
-    queryset = Courses.active_courses.all()
+    # queryset = Courses.active_courses.all()
+
+    def get_queryset(self):
+        try:
+            cohort_id = self.kwargs['cohort_id']
+            cohort = Cohort.objects.get(id=cohort_id)
+            return cohort.courses.all()
+        except:
+            return None
 
 
 class CohortListOnlyAPIView(generics.ListAPIView):
@@ -75,6 +82,12 @@ class CourseDetailAPIView(APIView):
 
     def get(self, request, pk):
         course = self.get_object(pk)
+        course_id=course.pk
+        self.course = course_id
+        endpoint = f"http://assessbk.afexats.com/api/assessment/application-type/{course_id}"
+        get_response = requests.get(url=endpoint)
+        print(self.course)
+        print(get_response.json())
         serializer = CourseDetailSerializer(course)
         return Response(
             data=serializer.data,
