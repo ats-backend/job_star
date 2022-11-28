@@ -1,3 +1,5 @@
+import requests
+
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, Http404
@@ -14,7 +16,7 @@ from .serializers import (
             CoursesSerializers, CohortSerializers,
             CourseDetailSerializer, CohortCountDownSerializer,
             CohortUpdateSerializer, CourseOnlySerializer,
-            CohortOnlySerializer
+            CohortOnlySerializer, CoursesCreateSerializers
             )
 
 from renderers.renderers import CustomRender
@@ -22,13 +24,20 @@ from permissions.permissions import IsAuthenticated
 
 
 class CoursesCreationAPIView(generics.CreateAPIView):
-    serializer_class = CoursesSerializers
+    serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
+    endpoint = "http://assessbk.afexats.com/api/assessment/application-type"
 
     def perform_create(self, serializer):
-        assessment = serializer.validated_data
-        print(assessment)
-        # assessment.save(commit=False)
+        assessment_type = serializer.validated_data.get('title')
+        assessment_desc = serializer.validated_data.get('description')
+        data = {
+            'title': assessment_type,
+            'description': assessment_desc
+        }
+        response = requests.post(url=self.endpoint, json=data)
+        print(response.status_code)
+        return super(CoursesCreationAPIView, self).perform_create(serializer)
 
 
 class AdminCourseDetailAPIView(generics.RetrieveAPIView):
@@ -40,6 +49,9 @@ class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
 
     def get_queryset(self):
+        # endpoint = "http://assessbk.afexats.com/api/assessment/application-type"
+        # get_response = requests.get(endpoint)
+        # print(get_response.json())
         return Courses.objects.filter(is_deleted=False)
 
 

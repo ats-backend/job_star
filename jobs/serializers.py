@@ -88,6 +88,16 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             'open_job'
         )
 
+class CoursesCreateSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Courses
+        fields = (
+            'title',
+            'image',
+            'description'
+        )
+
 
 class CoursesSerializers(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(read_only=True)
