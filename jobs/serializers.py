@@ -139,7 +139,7 @@ class CohortCountDownSerializer(serializers.ModelSerializer):
 
 
 class CohortSerializers(serializers.ModelSerializer):
-    courses = CoursesNextedSerializers(many=True, read_only=True)
+    courses = CoursesNextedSerializers(many=True)
     url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
