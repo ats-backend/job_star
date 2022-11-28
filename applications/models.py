@@ -97,6 +97,7 @@ class Application(models.Model):
         related_name='applications'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=25, null=True, blank=True, default="pending")
     is_deleted = models.BooleanField(default=False)
 
     active_objects = ActiveObject()
@@ -120,12 +121,6 @@ class Application(models.Model):
         phone_number = f"{self.applicant.phone_number.country_code}" \
                        f"{self.applicant.phone_number.national_number}"
         return phone_number
-    
-    @property
-    def status(self):
-        # if self.application_status.first():
-        return self.application_status.first().status
-        # return None
 
     @property
     def course(self):
@@ -175,18 +170,12 @@ class ApplicationStatus(models.Model):
         unique_together = ('application', 'status', 'activity',)
 
 
-# @receiver(post_save, sender=ApplicationStatus)
-# def send_status_email(sender, instance, created, **kwargs):
-#     if created:
-#         applicant = instance.application.applicant
-#         if instance.status == 'shortlisted':
-#             send_application_shortlisted_mail(applicant)
-#         if instance.status == 'invited':
-#             send_application_interview_mail(applicant)
-#         if instance.status == 'accepted':
-#             send_application_accepted_mail(applicant)
-#         if instance.status == 'rejected':
-#             send_application_rejected_mail(applicant)
+@receiver(post_save, sender=ApplicationStatus)
+def send_status_email(sender, instance, created, **kwargs):
+    if created:
+        application = instance.application
+        application.status = instance.status
+        application.save()
 
 
 EMAIL_TYPE_CHOICES = (
