@@ -1,4 +1,8 @@
+import json
+
 from django.db import IntegrityError
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from rest_framework import status
 from rest_framework.generics import (
@@ -10,7 +14,7 @@ from rest_framework.response import Response
 
 from helpers.utils import (
     send_application_shortlisted_mail, send_application_interview_mail,
-    send_application_accepted_mail, send_application_rejected_mail
+    send_application_accepted_mail, send_application_rejected_mail, send_assessment_to_applicant
 )
 from job_star.encryption import encrypt_data
 
@@ -416,6 +420,9 @@ class TrackApplicationAPIView(GenericAPIView):
 class ValidateApplicationIDAPIView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
+        application_id = request.data.get('application_id')
+        data = urlsafe_base64_decode(application_id).decode('utf-8')
+        request.data['application_id'] = data
         serializer = TrackApplicationSerializer(
             data=request.data
         )
@@ -520,3 +527,12 @@ class DeletedApplicantAPIView(ListAPIView):
 class DeletedEmailTemplateAPIView(ListAPIView):
     serializer_class = ApplicationEmailListSerializer
     queryset = ApplicationEmail.deleted_objects.all()
+
+
+class SendAssessmentToApplicantAPIView(GenericAPIView):
+    queryset = Application.active_objects.all()
+
+    def post(self, request, *args, **kwargs):
+        application = self.get_object()
+        send_assessment_to_applicant(application)
+        return Response(data="Assessment sent successfully")

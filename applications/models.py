@@ -181,7 +181,8 @@ def send_status_email(sender, instance, created, **kwargs):
 EMAIL_TYPE_CHOICES = (
     ('completed_application', 'Completed Application'),
     ('shortlisted', 'Shortlisted'),
-    ('invited', 'Invited for Interview'),
+    ('invited_for_interview', 'Invited for Interview'),
+    ('invited_to_assessment', 'Invited to Assessment'),
     ('accepted', 'Accepted'),
     ('rejected', 'Rejected'),
 )
@@ -193,7 +194,7 @@ class ApplicationEmail(models.Model):
     body = models.TextField()
     type = models.CharField(
         choices=EMAIL_TYPE_CHOICES,
-        max_length=25
+        max_length=30
     )
     created_on = models.DateTimeField(auto_now=True)
     last_modified = models.DateTimeField(auto_now_add=True)
