@@ -131,10 +131,11 @@ class CourseDeleteAPIView(GenericAPIView):
         course = self.get_object()
         course.is_deleted = not course.is_deleted
         course.save()
+        print(course.is_deleted)
         data = {
-            'is_delete': not course.is_deleted
+            'is_delete': course.is_deleted
         }
-        application_type = requests.patch(url=self.endpiont+f"{self.kwargs['uid']}", data=data)
+        application_type = requests.delete(url=self.endpiont+f"{self.kwargs['uid']}", data=data)
         print(application_type.json())
         if course.is_deleted:
             return Response(
