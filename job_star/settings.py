@@ -208,7 +208,7 @@ CELERY_EMAIL_TASK_CONFIG = {
 CELERY_EMAIL_CHUNK_SIZE = 1
 
 # BROKER_URL = 'redis://localhost:6379'
-CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_BROKER_URL = config('BROKER_URL')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'default'
 # CELERY_ACCEPT_CONTENT = ['application/json']
