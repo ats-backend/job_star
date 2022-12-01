@@ -18,7 +18,8 @@ from .serializers import (
             CoursesSerializers, CohortSerializers,
             CourseDetailSerializer, CohortCountDownSerializer,
             CohortUpdateSerializer, CourseOnlySerializer,
-            CohortOnlySerializer, CoursesCreateSerializers
+            CohortOnlySerializer, CoursesCreateSerializers,
+            JobEditSerializers
             )
 
 from renderers.renderers import CustomRender
@@ -241,7 +242,7 @@ class JobUpdateAPIView(APIView):
 
     def put(self, request, pk):
         job = self.get_object(pk)
-        serializer = JobSerializers(job, data=request.data)
+        serializer = JobEditSerializers(job, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data,
