@@ -64,7 +64,6 @@ def send_application_interview_mail(recipient):
             from_email=settings.EMAIL_HOST_USER
         )
         status = mail.send()
-        # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
         pass
     return
@@ -85,7 +84,6 @@ def send_application_accepted_mail(recipient):
             from_email=settings.EMAIL_HOST_USER
         )
         status = mail.send()
-        # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
         pass
     return
@@ -106,7 +104,6 @@ def send_application_rejected_mail(recipient):
             from_email=settings.EMAIL_HOST_USER
         )
         status = mail.send()
-        # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
         pass
     return
@@ -132,7 +129,6 @@ def send_assessment_to_applicant(application):
             from_email=settings.EMAIL_HOST_USER
         )
         status = mail.send()
-        # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
         pass
     return

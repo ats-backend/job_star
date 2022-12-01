@@ -112,7 +112,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
         course_type = instance.title
         course_desc = instance.description
         course_uid = instance.uid
-        course_create_assessment_server(course_type, course_desc, course_uid)
+        course_create_assessment_server.delay(course_type, course_desc, course_uid)
         return instance
 
 
@@ -153,7 +153,7 @@ class CoursesSerializers(serializers.ModelSerializer):
         course_uid = instance.uid
         course_title = instance.title
         course_desc = instance.description
-        course_update_assessment_server(course_uid, course_title, course_desc)
+        course_update_assessment_server.delay(course_uid, course_title, course_desc)
         return instance
 
 
@@ -255,7 +255,7 @@ class CohortSerializers(serializers.ModelSerializer):
         instance.application_start_date = validated_data.get(
             'application_start_date', instance.application_start_date)
         instance.application_end_date = validated_data.get(
-            'application_start_end', instance.application_end_date)
+            'application_end_date', instance.application_end_date)
         instance.start_date = validated_data.get(
             'start_date', instance.start_date)
         instance.end_date = validated_data.get(
@@ -273,8 +273,8 @@ class CohortSerializers(serializers.ModelSerializer):
             instance.save()
             return instance
         except:
-            raise Exception({
-                'No course is available'
+            raise serializers.ValidationError({
+                'No course available'
             })
 
 class CohortUpdateSerializer(serializers.ModelSerializer):
@@ -311,7 +311,7 @@ class CohortUpdateSerializer(serializers.ModelSerializer):
         instance.application_start_date = validated_data.get(
             'application_start_date', instance.application_start_date)
         instance.application_end_date = validated_data.get(
-            'application_start_end', instance.application_end_date)
+            'application_end_date', instance.application_end_date)
         instance.start_date = validated_data.get(
             'start_date', instance.start_date)
         instance.end_date = validated_data.get(
