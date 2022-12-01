@@ -59,9 +59,6 @@ class CoursesListAPIView(generics.ListAPIView):
     endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
 
     def get_queryset(self):
-        res = requests.get(url=self.endpoint)
-        # print(res.status_code)
-        print(res.json())
         return Courses.active_courses.all()
 
 

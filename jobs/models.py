@@ -56,6 +56,12 @@ class Courses(models.Model):
             return active_cohort.jobs.all()
         return
 
+    @property
+    def course_status(self):
+        if self.is_deleted:
+            return f"Inactive"
+        return f"Active"
+
 
 class Cohort(models.Model):
     name = models.CharField(max_length=250, unique=True)

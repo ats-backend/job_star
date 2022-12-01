@@ -116,7 +116,8 @@ class CoursesSerializers(serializers.ModelSerializer):
             'title',
             'image',
             'description',
-            'created_at'
+            'created_at',
+            'course_status'
         )
 
     def get_description(self, obj):
