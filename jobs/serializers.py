@@ -77,10 +77,8 @@ class NextedJobSerializer(serializers.ModelSerializer):
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
-    # open_cohort = serializers.SerializerMethodField(read_only=True)
-    # cohort = serializers.HyperlinkedRelatedField(queryset=Courses.objects.filter())
-    active_cohort = NextedCohortSerializer(many=True)
-    open_job = NextedJobSerializer(many=True)
+    # active_cohort = NextedCohortSerializer()
+    # open_job = NextedJobSerializer(many=True)
 
     class Meta:
         model = Courses
@@ -97,6 +95,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
     class Meta:
         model = Courses
         fields = (
+            'uid'
             'title',
             'image',
             'description'
@@ -115,7 +114,8 @@ class CoursesSerializers(serializers.ModelSerializer):
             'title',
             'image',
             'description',
-            'created_at'
+            'created_at',
+            'course_status'
         )
 
     def get_description(self, obj):
