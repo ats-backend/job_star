@@ -142,7 +142,7 @@ def set_application_id(sender, instance, created, **kwargs):
         first_name_id = instance.applicant.first_name[0].upper()
         last_name_id = instance.applicant.last_name[0].upper()
         spec_id_1 = specification[0][0]
-        spec_id_2 = specification[1][0]
+        spec_id_2 = specification[1][0] if len(specification) > 1 else specification[0][1]
         application_id = f"{first_name_id}{last_name_id}-" \
                          f"{spec_id_1}{spec_id_2}-{id2string}"
         instance.application_id = application_id

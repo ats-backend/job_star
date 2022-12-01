@@ -42,17 +42,42 @@ class Courses(models.Model):
     def __str__(self):
         return self.title
 
+    @property
     def active_cohort(self):
-        # print(self.cohort_set.all())
-        return self.cohort_set.filter(
+        cohort = self.cohort_set.filter(
             end_date__gt=timezone.now(),
-        )
+        ).first()
+        if cohort:
+            cohort_data = {
+                'name': cohort.name,
+                'start_date': cohort.start_date,
+                'end_date': cohort.end_date
+            }
+            return cohort_data
+        return None
 
+    @property
     def open_job(self):
         active_cohort = self.cohort_set.filter(
             end_date__gt=timezone.now(),
         ).first()
-        return active_cohort.jobs.all()
+        try:
+            job = active_cohort.jobs.filter(course_id=self.id).first()
+            job_data = {
+                'id': job.pk,
+                'title': job.title,
+                'cohort': job.cohort.name,
+                'requirement': job.requirement
+            }
+            return job_data
+        except:
+            return None
+
+    @property
+    def course_status(self):
+        if self.is_deleted:
+            return f"Inactive"
+        return f"Active"
 
 
 class Cohort(models.Model):
