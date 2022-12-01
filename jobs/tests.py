@@ -8,4 +8,4 @@ from rest_framework import APITestCase
 class TestListCreateAPIView(APITestCase):
 
     def test_list_of_courses(self):
-        response = self.client.get(reverse())
+        response = self.client.get(reverse('job:course-detail'))

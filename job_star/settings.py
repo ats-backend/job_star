@@ -183,7 +183,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost",
     "http://localhost:3000",
     "http://127.0.0.1",
-    "http://assessbk.afexats.com",
+    "https://assessbk.afexats.com",
+    "https://ats-track-application.netlify.app"
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
