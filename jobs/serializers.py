@@ -97,6 +97,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
     class Meta:
         model = Courses
         fields = (
+            'uid'
             'title',
             'image',
             'description'

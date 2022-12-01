@@ -52,7 +52,9 @@ class Courses(models.Model):
         active_cohort = self.cohort_set.filter(
             end_date__gt=timezone.now(),
         ).first()
-        return active_cohort.jobs.all()
+        if active_cohort:
+            return active_cohort.jobs.all()
+        return
 
 
 class Cohort(models.Model):
