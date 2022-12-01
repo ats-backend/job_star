@@ -101,8 +101,6 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
             'description'
         )
 
-
-
 class CoursesSerializers(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(read_only=True)
     description = serializers.SerializerMethodField(read_only=True)
