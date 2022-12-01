@@ -35,14 +35,6 @@ class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
 
-    def perform_create(self, serializer):
-
-        course_type = serializer.validated_data.get('title')
-        course_desc = serializer.validated_data.get('description')
-        course_uid = self.get_uid()
-        course_create_assessment_server(course_type, course_desc, course_uid)
-        return super(CoursesCreationAPIView, self).perform_create(serializer)
-
 
 class AdminCourseDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CoursesSerializers
@@ -51,7 +43,6 @@ class AdminCourseDetailAPIView(generics.RetrieveAPIView):
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
-    endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
 
     def get_queryset(self):
         return Courses.active_courses.all()
@@ -94,23 +85,16 @@ class CourseDetailAPIView(APIView):
 class CourseUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
-    lookup_field = 'uid'
-
-    def perform_update(self, serializer):
-        course_uid = self.kwargs['uid']
-        course_title = serializer.validated_data.get('title')
-        course_desc = serializer.validated_data.get('description')
-        course_update_assessment_server(course_uid, course_title, course_desc)
-        return super(CourseUpdateAPIView, self).perform_update(serializer)
+    lookup_field = 'uuid'
 
 
 class CourseDeleteAPIView(GenericAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
-    lookup_field = 'uid'
+    lookup_field = 'uuid'
 
     def post(self, request, *args, **kwargs):
-        course_uid = self.kwargs.get('uid')
+        course_uid = self.kwargs.get('uuid')
         course = self.get_object()
         course.is_deleted = not course.is_deleted
         course.save()

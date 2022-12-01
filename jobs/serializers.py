@@ -12,6 +12,12 @@ from rest_framework import serializers
 from .models import Job, Cohort, Courses
 from applications.models import Application
 
+from utils.helpers import (
+    course_create_assessment_server,
+    course_update_assessment_server,
+    course_delete_assessment_server
+)
+
 
 
 class CoursesNextedSerializers(serializers.Serializer):
@@ -101,6 +107,16 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
             'description'
         )
 
+    def create(self, validated_data):
+        instance = Courses.objects.create(**validated_data)
+        course_type = instance.title
+        course_desc = instance.description
+        course_uid = instance.uid
+        course_create_assessment_server(course_type, course_desc, course_uid)
+        return instance
+
+
+
 class CoursesSerializers(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(read_only=True)
     description = serializers.SerializerMethodField(read_only=True)
@@ -128,6 +144,18 @@ class CoursesSerializers(serializers.ModelSerializer):
                        kwargs={'pk': obj.pk},
                        request=request
                        )
+
+    def update(self, instance, validated_data):
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        course_uid = instance.uid
+        course_title = instance.title
+        course_desc = instance.description
+        course_update_assessment_server(course_uid, course_title, course_desc)
+        return instance
+
 
     # def validate(self, attrs):
     #     courses = Courses.objects.values_list('title')
@@ -298,7 +326,7 @@ class CohortUpdateSerializer(serializers.ModelSerializer):
             return instance
         except:
             raise serializers.ValidationError({
-                'Could not fetch course id'
+                "course with this id doesn't exist"
             })
 
 class JobListSerializers(serializers.ModelSerializer):
@@ -311,7 +339,6 @@ class JobListSerializers(serializers.ModelSerializer):
             'id',
             'title',
             'date_posted',
-            # 'application',
             'application_url'
                   )
 
@@ -374,6 +401,3 @@ class JobEditSerializers(serializers.ModelSerializer):
             'created_by': {'required': False},
             'title': {'required': False}
         }
-
-
-

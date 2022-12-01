@@ -14,15 +14,13 @@ def course_create_assessment_server(course_title, course_desc, course_uid):
 
 def course_update_assessment_server(course_uid, course_title, course_desc):
 
-    course_uid = self.kwargs['uid']
     data = {
-        'uid': str(course_uid),
+        'uid': course_uid,
         'title': course_title,
         'description': course_desc
     }
 
     get_response = requests.put(url=endpoint + f"/{course_uid}", json=data)
-    return get_response
 
 
 def course_delete_assessment_server(is_deleted, course_uid):
@@ -31,4 +29,3 @@ def course_delete_assessment_server(is_deleted, course_uid):
         'is_delete': is_deleted
     }
     application_type = requests.delete(url=endpoint + f"/{course_uid}", data=data)
-    return application_type
