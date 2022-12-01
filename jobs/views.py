@@ -36,7 +36,7 @@ class CoursesCreationAPIView(generics.CreateAPIView):
     queryset = Courses.objects.all()
 
 
-class AdminCourseDetailAPIView(generics.RetrieveAPIView):
+class AdminCourseListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
 
