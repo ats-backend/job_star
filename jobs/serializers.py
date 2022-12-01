@@ -102,6 +102,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
         )
 
 
+
 class CoursesSerializers(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(read_only=True)
     description = serializers.SerializerMethodField(read_only=True)
@@ -130,14 +131,14 @@ class CoursesSerializers(serializers.ModelSerializer):
                        request=request
                        )
 
-    def validate(self, attrs):
-        courses = Courses.objects.values_list('title')
-
-        if any(attrs['title'] in title for title in courses):
-            raise serializers.ValidationError({
-                "course: A course with this title already exist"
-            })
-        return attrs
+    # def validate(self, attrs):
+    #     courses = Courses.objects.values_list('title')
+    #
+    #     if any(attrs['title'] in title for title in courses):
+    #         raise serializers.ValidationError({
+    #             "course: A course with this title already exist"
+    #         })
+    #     return attrs
 
 
 class CohortCountDownSerializer(serializers.ModelSerializer):
