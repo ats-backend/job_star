@@ -255,7 +255,7 @@ class CohortSerializers(serializers.ModelSerializer):
         instance.application_start_date = validated_data.get(
             'application_start_date', instance.application_start_date)
         instance.application_end_date = validated_data.get(
-            'application_start_end', instance.application_end_date)
+            'application_end_date', instance.application_end_date)
         instance.start_date = validated_data.get(
             'start_date', instance.start_date)
         instance.end_date = validated_data.get(
@@ -273,8 +273,8 @@ class CohortSerializers(serializers.ModelSerializer):
             instance.save()
             return instance
         except:
-            raise Exception({
-                'No course is available'
+            raise serializers.ValidationError({
+                'No course available'
             })
 
 class CohortUpdateSerializer(serializers.ModelSerializer):
