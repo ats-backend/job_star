@@ -197,12 +197,12 @@ class CohortSerializers(serializers.ModelSerializer):
                        request=request
                        )
 
-    def validate_application_start_date(self, value):
-        if value < timezone.now():
-            raise serializers.ValidationError(
-                "Cohort's application start date must be a current or future time"
-            )
-        return value
+    # def validate_application_start_date(self, value):
+    #     if value < timezone.now():
+    #         raise serializers.ValidationError(
+    #             "Cohort's application start date must be a current or future time"
+    #         )
+    #     return value
 
     def validate_application_end_date(self, value):
         if value <= timezone.now():
