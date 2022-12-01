@@ -45,6 +45,7 @@ class Courses(models.Model):
     @property
     def active_cohort(self):
         cohort = self.cohort_set.filter(
+            start_date__lt=timezone.now(),
             end_date__gt=timezone.now(),
         ).first()
         if cohort:
@@ -59,7 +60,7 @@ class Courses(models.Model):
     @property
     def open_job(self):
         active_cohort = self.cohort_set.filter(
-            end_date__gt=timezone.now(),
+            application_end_date__gt=timezone.now(),
         ).first()
         try:
             job = active_cohort.jobs.filter(course_id=self.id).first()

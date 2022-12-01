@@ -95,7 +95,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
     class Meta:
         model = Courses
         fields = (
-            'uid'
+            'uid',
             'title',
             'image',
             'description'
@@ -294,14 +294,12 @@ class CohortUpdateSerializer(serializers.ModelSerializer):
             for course in courses:
                 for d in course:
                     course_id = Courses.objects.get(title=(course[d]))
-                    print(d)
-                    courses_id.append(course_id.pk)
-                    instance.courses.add(courses_id[0])
+                    instance.courses.add(course_id)
             instance.save()
             return instance
         except:
-            raise Exception({
-                'An error occurred'
+            raise serializers.ValidationError({
+                'Could not fetch course id'
             })
 
 class JobListSerializers(serializers.ModelSerializer):
@@ -363,6 +361,19 @@ class JobSerializers(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'created_by': {'required': True}
+        }
+
+class JobEditSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = (
+            'id', 'title', 'course', 'cohort',
+            'requirement', 'date_posted', 'created_by'
+        )
+        extra_kwargs = {
+            'created_by': {'required': False},
+            'title': {'required': False}
         }
 
 
