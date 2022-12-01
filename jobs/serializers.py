@@ -1,6 +1,8 @@
 import datetime
+from uuid import uuid4
 import pytz
 from django.utils import timezone
+from django.utils.text import Truncator
 
 from rest_framework.reverse import reverse
 
@@ -9,6 +11,7 @@ utc = pytz.UTC
 from rest_framework import serializers
 from .models import Job, Cohort, Courses
 from applications.models import Application
+
 
 
 class CoursesNextedSerializers(serializers.Serializer):
@@ -102,15 +105,21 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
 
 class CoursesSerializers(serializers.ModelSerializer):
     url = serializers.SerializerMethodField(read_only=True)
+    description = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Courses
         fields = (
             'url',
+            'uid',
             'title',
             'image',
-            'description'
+            'description',
+            'created_at'
         )
+
+    def get_description(self, obj):
+        return f"{obj.description[:200]}..."
 
     def get_url(self, obj):
         request = self.context.get('request')
@@ -238,7 +247,7 @@ class CohortSerializers(serializers.ModelSerializer):
             return instance
         except:
             raise Exception({
-                'An error occurred'
+                'No course is available'
             })
 
 class CohortUpdateSerializer(serializers.ModelSerializer):

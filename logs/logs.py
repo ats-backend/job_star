@@ -1,22 +1,31 @@
 import logging
+import os
+from decouple import config
+
 from django.utils.deprecation import MiddlewareMixin
 from django.utils import timezone
-
 
 log = logging.getLogger(__name__)
 
 
 class ResponseLoggingMiddleware(MiddlewareMixin):
     req = None
-    action = None
+    request_by= None
+    admin_frontend = None
 
     def basicConfig(self, **messages):
+
+        website_api_key = self.req.META.get('HTTP_API_KEY')
+        if website_api_key == config('API_KEY'):
+            self.request_by = 'website frontend'
+        else:
+            self.request_by = 'admin frontend'
 
         with open(file='app_jobs.log', mode='a') as file:
             handler = file.write(
                 f'Time: {messages["time"]}' + "  "
                 f'Method:{self.req.method}' + "  "
-                f"Action:{self.req.body}" + "  "
+                f'Request_by:{self.request_by}' + "  "
                 f'Status_code:{messages["method"]}' + " "
                 f"Endpoint: {messages['endpoint']}\n"
             )
@@ -24,6 +33,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
             return handler
 
     def process_response(self, request, response):
+        self.req = request
         try:
 
             log.info(self.basicConfig(

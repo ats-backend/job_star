@@ -1,8 +1,10 @@
 import requests
+from uuid import uuid4
 
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, Http404
+from django.db.models.functions import Substr
 
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
@@ -26,17 +28,24 @@ from permissions.permissions import IsAuthenticated
 class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
-    endpoint = "http://assessbk.afexats.com/api/assessment/application-type"
+    endpoints = 'https://assessbk.afexats.com/api/assessment/application-type'
+
+    def get_uid(self):
+        return str(uuid4())
 
     def perform_create(self, serializer):
-        assessment_type = serializer.validated_data.get('title')
-        assessment_desc = serializer.validated_data.get('description')
+
+        course_type = serializer.validated_data.get('title')
+        course_desc = serializer.validated_data.get('description')
+        course_uid = self.get_uid()
+
         data = {
-            'title': assessment_type,
-            'description': assessment_desc
+            'title': course_type,
+            'description': course_desc,
+            'uid': course_uid
         }
-        response = requests.post(url=self.endpoint, json=data)
-        print(response.status_code)
+        response = requests.post(url=self.endpoints, json=data)
+        serializer.save(uid=course_uid)
         return super(CoursesCreationAPIView, self).perform_create(serializer)
 
 
@@ -47,16 +56,17 @@ class AdminCourseDetailAPIView(generics.RetrieveAPIView):
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
+    endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
 
     def get_queryset(self):
-        # get_response = requests.get(endpoint)
-        # print(get_response.json())
-        return Courses.objects.filter(is_deleted=False)
+        res = requests.get(url=self.endpoint)
+        # print(res.status_code)
+        print(res.json())
+        return Courses.active_courses.all()
 
 
 class CourseListOnlyAPIView(generics.ListAPIView):
     serializer_class = CourseOnlySerializer
-    # queryset = Courses.active_courses.all()
 
     def get_queryset(self):
         try:
@@ -82,12 +92,6 @@ class CourseDetailAPIView(APIView):
 
     def get(self, request, pk):
         course = self.get_object(pk)
-        course_id=course.pk
-        self.course = course_id
-        endpoint = f"http://assessbk.afexats.com/api/assessment/application-type/{course_id}"
-        get_response = requests.get(url=endpoint)
-        print(self.course)
-        print(get_response.json())
         serializer = CourseDetailSerializer(course)
         return Response(
             data=serializer.data,
@@ -98,17 +102,41 @@ class CourseDetailAPIView(APIView):
 class CourseUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    lookup_field = 'uid'
+    endpoint = f"https://assessbk.afexats.com/api/assessment/application-type/"
+
+    def perform_update(self, serializer):
+        course_uid = self.kwargs['uid']
+        course_title = serializer.validated_data.get('title')
+        course_desc = serializer.validated_data.get('description')
+        data = {
+            'uid': str(course_uid),
+            'title': course_title,
+            'description': course_desc
+        }
+
+        get_response = requests.put(url=self.endpoint+f"{course_uid}", json=data)
+        print(get_response.status_code, get_response)
+        return super(CourseUpdateAPIView, self).perform_update(serializer)
 
 
 class CourseDeleteAPIView(GenericAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
+    lookup_field = 'uid'
+    endpiont = f"https://assessbk.afexats.com/api/assessment/application-type/"
+
 
     def post(self, request, *args, **kwargs):
         course = self.get_object()
         course.is_deleted = not course.is_deleted
         course.save()
-
+        print(course.is_deleted)
+        data = {
+            'is_delete': course.is_deleted
+        }
+        application_type = requests.delete(url=self.endpiont+f"{self.kwargs['uid']}", data=data)
+        print(application_type.json())
         if course.is_deleted:
             return Response(
                 data=f"{course.title} is inactive",
@@ -178,19 +206,6 @@ class JobListCreateAPIView(generics.ListAPIView):
         )
     serializer_class = JobSerializers
 
-    # def get(self, request, *args, **kwargs):
-    #     active_jobs =
-    #     serializer = JobListSerializers(
-    #         active_jobs,
-    #         many=True,
-    #         context={'request': request}
-    #     )
-    #     print(serializer.data)
-    #     return Response(
-    #         data=serializer.data,
-    #         status=status.HTTP_200_OK
-    #     )
-
     def post(self, request):
         serializer = JobSerializers(data=request.data)
         if serializer.is_valid():
@@ -257,4 +272,4 @@ class JobDestroyAPIView(GenericAPIView):
             data="Job is inactive",
             status=status.HTTP_200_OK
         )
-    
+
