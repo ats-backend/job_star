@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid4
 
 from datetime import datetime
 from django.core.validators import FileExtensionValidator
@@ -29,7 +29,7 @@ class Courses(models.Model):
         null=True,
         blank=True
     )
-    uid = models.CharField(max_length=200,null=True, blank=True)
+    uuid = models.UUIDField(default=uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
@@ -41,6 +41,10 @@ class Courses(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def uid(self):
+        return str(self.uuid)
 
     @property
     def active_cohort(self):
