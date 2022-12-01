@@ -9,6 +9,7 @@ from .views import (CourseDetailAPIView,
                     CohortCreationAPIView, CohortDetailAPIView,
                     CohortDestroyAPIView, CohortCountDownAPIView,
                     CohortListOnlyAPIView,CourseListOnlyAPIView,
+                    AdminCourseListAPIView,
                     )
 
 from applications.views import ApplicationListAPIView
@@ -19,9 +20,11 @@ urlpatterns = [
     # courses urls
     path('courses/', CoursesListAPIView.as_view()),
     path('courses/create', CoursesCreationAPIView.as_view()),
+    path('all-courses/', AdminCourseListAPIView.as_view()),
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<uuid:uuid>/edit', CourseUpdateAPIView.as_view()),
     path('courses/<uuid:uuid>/delete', CourseDeleteAPIView.as_view()),
+
 
 
     # Cohort urls
