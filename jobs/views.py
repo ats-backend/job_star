@@ -99,7 +99,7 @@ class CourseDeleteAPIView(GenericAPIView):
         course.is_deleted = not course.is_deleted
         course.save()
         is_deleted = course.is_deleted
-        course_delete_assessment_server(is_deleted, course_uid)
+        course_delete_assessment_server.delay(is_deleted, course_uid)
         if course.is_deleted:
             return Response(
                 data=f"{course.title} is Inactive",

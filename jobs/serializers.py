@@ -112,7 +112,7 @@ class CoursesCreateSerializers(serializers.ModelSerializer):
         course_type = instance.title
         course_desc = instance.description
         course_uid = instance.uid
-        course_create_assessment_server(course_type, course_desc, course_uid)
+        course_create_assessment_server.delay(course_type, course_desc, course_uid)
         return instance
 
 
@@ -153,7 +153,7 @@ class CoursesSerializers(serializers.ModelSerializer):
         course_uid = instance.uid
         course_title = instance.title
         course_desc = instance.description
-        course_update_assessment_server(course_uid, course_title, course_desc)
+        course_update_assessment_server.delay(course_uid, course_title, course_desc)
         return instance
 
 
