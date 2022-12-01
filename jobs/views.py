@@ -29,7 +29,7 @@ from permissions.permissions import IsAuthenticated
 class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
-    endpoints = 'https://assessbk.afexats.com/api/assessment/application-type'
+
 
     def get_uid(self):
         return str(uuid4())
