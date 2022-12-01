@@ -20,8 +20,8 @@ urlpatterns = [
     path('courses/', CoursesListAPIView.as_view()),
     path('courses/create', CoursesCreationAPIView.as_view()),
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
-    path('courses/<uuid:uid>/edit', CourseUpdateAPIView.as_view()),
-    path('courses/<uuid:uid>/delete', CourseDeleteAPIView.as_view()),
+    path('courses/<uuid:uuid>/edit', CourseUpdateAPIView.as_view()),
+    path('courses/<uuid:uuid>/delete', CourseDeleteAPIView.as_view()),
 
 
     # Cohort urls
