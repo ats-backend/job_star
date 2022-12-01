@@ -37,16 +37,11 @@ class ObjectMixin:
         return obj
 
 
-class EncryptionMixin(GenericAPIView):
+class DecryptionMixin(CreateAPIView, UpdateAPIView):
 
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            self.get_queryset(), many=True
-        )
-        return Response(
-            data=encrypt_data(serializer.data),
-            status=status.HTTP_200_OK
-        )
+    def post(self, request, *args, **kwargs):
+        print(request.data)
+        return super(DecryptionMixin, self).post(request, *args, **kwargs)
 
 
 class ApplicationListAPIView(ListAPIView):
