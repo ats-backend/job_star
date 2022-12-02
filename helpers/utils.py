@@ -3,7 +3,7 @@ from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from applications.models import ApplicationEmail
+from applications.models import ApplicationEmail, Application
 from job_star import settings
 
 
@@ -112,12 +112,12 @@ def send_application_rejected_mail(recipient):
 def send_assessment_to_applicant(application):
     try:
         email = ApplicationEmail.objects.get(
-            type__iexact='invited_to_assessment'
+            type__iexact='Invited to Assessment'
         )
         application_id = application.application_id
         encoded_params = urlsafe_base64_encode(force_bytes(application_id))
         applicant = application.applicant
-        url = f"{config('ASSESSMENT_URL')}?{encoded_params}"
+        url = f"{config('ASSESSMENT_URL')}taketest/invitation/?uid={encoded_params}"
         subject = email.subject
         message = f"{email.salutation} {applicant.first_name},\n {email.body}" \
                   f"{url}"
