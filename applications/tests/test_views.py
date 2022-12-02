@@ -12,6 +12,8 @@ from applications.models import Application, Applicant, ApplicationEmail
 from jobs.models import Job, Cohort, Courses
 
 
+# TODO Disable encryption before testing
+
 class ApplicationListAPIViewTest(APITestCase):
 
     @classmethod
