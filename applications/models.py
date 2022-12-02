@@ -1,3 +1,4 @@
+from ckeditor.fields import RichTextField
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -188,7 +189,7 @@ EMAIL_TYPE_CHOICES = (
 class ApplicationEmail(models.Model):
     subject = models.CharField(max_length=100)
     salutation = models.CharField(max_length=10)
-    body = models.TextField()
+    body = RichTextField()
     type = models.CharField(
         choices=EMAIL_TYPE_CHOICES,
         max_length=30,
