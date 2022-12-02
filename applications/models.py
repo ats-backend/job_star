@@ -36,8 +36,7 @@ class Applicant(models.Model):
         upload_to='resume',
         validators=[FileExtensionValidator(
             allowed_extensions=['pdf', 'docx', 'doc']
-        )],
-        null=True, blank=True
+        )]
     )
     other_attachment = models.FileField(
         upload_to='other_attachments',
