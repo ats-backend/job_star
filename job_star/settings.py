@@ -61,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'logs.logs.ResponseLoggingMiddleware',
-    # 'job_star.middleware.EncryptionMiddleware',
 
 ]
 

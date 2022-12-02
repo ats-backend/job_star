@@ -94,24 +94,22 @@ class ApplicantSerializer(serializers.ModelSerializer):
 
     def validate_resume(self, value):
         size_limit = 1 * 1024 * 1024
-        try:
-            if value.size > size_limit:
-                raise serializers.ValidationError(
-                    "Resume size cannot be greater than 1MB"
-                )
-        except:
-            pass    # leave other validation to database
+
+        if value and value.size > size_limit:
+            raise serializers.ValidationError(
+                "Resume size cannot be greater than 1MB"
+            )
+
         return value
 
     def validate_other_attachment(self, value):
         size_limit = 1 * 1024 * 1024
-        try:
-            if value.size > size_limit:
-                raise serializers.ValidationError(
-                    "Attachment size cannot be greater than 1MB"
-                )
-        except:
-            pass    # leave other validation to database
+
+        if value and value.size > size_limit:
+            raise serializers.ValidationError(
+                "Attachment size cannot be greater than 1MB"
+            )
+
         return value
 
 
