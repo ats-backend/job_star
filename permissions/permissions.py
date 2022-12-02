@@ -94,6 +94,7 @@ class IsAdminOrAssessmentFrontendAuthenticated(BasePermission):
             else:
                 de_hash = None
             hash = hashlib.sha256(de_hash.encode('utf8')).hexdigest()
+            print(hash)
 
         except:
             raise AuthenticationFailed()
