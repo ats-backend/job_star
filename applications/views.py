@@ -12,13 +12,14 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
+from helpers.mixins import DecryptionMixin
 from helpers.utils import (
     send_application_shortlisted_mail, send_application_interview_mail,
     send_application_accepted_mail, send_application_rejected_mail, send_assessment_to_applicant
 )
 from job_star.encryption import encrypt_data, decrypt_data
 # from parsers.parsers import CustomJSONParser
-from permissions.permissions import IsAssessmentFrontendAuthenticated, IsAuthenticated
+from permissions.permissions import IsAdminOrAssessmentFrontendAuthenticated, IsAdminAuthenticated
 
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
@@ -39,16 +40,6 @@ class ObjectMixin:
         return obj
 
 
-class DecryptionMixin(CreateAPIView, UpdateAPIView):
-
-    def post(self, request, *args, **kwargs):
-        if request.data.get('data'):
-            dec_data = decrypt_data(request.data['data'])
-            print(dec_data)
-            request.data = dec_data
-        return super(DecryptionMixin, self).post(request, *args, **kwargs)
-
-
 class ApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
     parser_classes = (MultiPartParser, JSONParser,)
@@ -67,14 +58,20 @@ class CreateApplicationAPIView(CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            request_data = decrypt_data(request.data['data'])
-        except:
-            request_data = request.data
+            dec_type = decrypt_data(request.data['data'])
+            request._full_data = dec_type
+        except KeyError:
+            # request._full_data = request.data
+            pass
+            # return Response(
+            #     data="Got a plain data instead of encrypted data",
+            #     status=status.HTTP_400_BAD_REQUEST
+            # )
         job_id = kwargs['job_id']
         try:
-            applicant = Applicant.objects.get(email__iexact=request_data['email'])
+            applicant = Applicant.objects.get(email__iexact=request.data['email'])
         except:
-            applicant_serializer = ApplicantSerializer(data=request_data)
+            applicant_serializer = ApplicantSerializer(data=request.data)
             applicant_serializer.is_valid(raise_exception=True)
             applicant = applicant_serializer.save()
         data = {
@@ -104,7 +101,7 @@ class ApplicantListAPIView(ListAPIView):
     queryset = Applicant.active_objects.all()
 
 
-class ApplicantDetailAPIView(RetrieveUpdateAPIView):
+class ApplicantDetailAPIView(DecryptionMixin, RetrieveUpdateAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
 
@@ -392,13 +389,18 @@ class TrackApplicationAPIView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         # decrypted_data = decrypt_data(request.data)
         try:
-            data = decrypt_data(request.data['data'])
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
         except:
-            data = request.data
-        if data.get('application_id'):
+            # data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data.get('application_id'):
             try:
                 application = Application.objects.get(
-                    application_id__iexact=data['application_id']
+                    application_id__iexact=request.data['application_id']
                 )
             except:
                 return Response(
@@ -428,10 +430,19 @@ class TrackApplicationAPIView(GenericAPIView):
 
 class ValidateApplicationIDAPIView(GenericAPIView):
     permission_classes = (
-        IsAuthenticated, IsAssessmentFrontendAuthenticated,
+        IsAdminOrAssessmentFrontendAuthenticated,
     )
 
     def post(self, request, *args, **kwargs):
+        try:
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
+        except:
+            # request_data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         application_id = request.data.get('application_id')
         data = urlsafe_base64_decode(application_id).decode('utf-8')
         request.data['application_id'] = data
@@ -459,7 +470,7 @@ class ValidateApplicationIDAPIView(GenericAPIView):
         )
 
 
-class ApplicationEmailTemplateAPIView(ListCreateAPIView):
+class ApplicationEmailTemplateAPIView(DecryptionMixin, ListCreateAPIView):
     serializer_class = ApplicationEmailListSerializer
     queryset = ApplicationEmail.active_objects.all()
 
@@ -469,7 +480,7 @@ class ApplicationEmailTemplateDetailAPIView(RetrieveAPIView):
     queryset = ApplicationEmail.active_objects.all()
 
 
-class ApplicationEmailTemplateEditAPIView(UpdateAPIView):
+class ApplicationEmailTemplateEditAPIView(DecryptionMixin, UpdateAPIView):
     serializer_class = ApplicationEmailDetailSerializer
     queryset = ApplicationEmail.active_objects.all()
 
