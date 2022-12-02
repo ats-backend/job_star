@@ -78,22 +78,21 @@ class ApplicationListAPIViewTest(APITestCase):
         self.assertTrue(bool(response['data']['next']), True)
         self.assertGreater(response['data']['count'], 0)
 
-    # def test_create_application(self):
-    #     url = reverse('applications:create_application', args=[1])
-    #     data = self.applicant_detail()
-    #     data.update({
-    #         'first_name': 'First Name',
-    #         'last_name': 'Last Name',
-    #         'email': 'create@gmail.com',
-    #         'resume': r'\job_star\media\resume\Document2.pdf',
-    #         'other_attachment': r'\job_star\media\resume\Document2.pdf'
-    #     })
-    #     print(type(data['resume']))
-    #     self.client.credentials(**self.request_headers)
-    #     response = self.client.post(url, data=data, format='json')
-    #     response_data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEqual(response_data['success'], True)
+    def test_create_application(self):
+        url = reverse('applications:create_application', args=[1])
+        data = self.applicant_detail()
+        data.update({
+            'first_name': 'First Name',
+            'last_name': 'Last Name',
+            'email': 'create@gmail.com',
+            'resume': open(r'job_star\media\resume\Document2.pdf', 'rb'),
+            'other_attachment': open(r'job_star\media\resume\Document2.pdf', 'rb')
+        })
+        self.client.credentials(**self.request_headers)
+        response = self.client.post(url, data=data)
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_data['success'], True)
 
     def test_application_detail(self):
         url = reverse('applications:application_detail', args=[1])

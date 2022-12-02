@@ -1,12 +1,13 @@
 from datetime import timedelta, datetime
 
+from django.utils import timezone
 from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
 from rest_framework.validators import UniqueTogetherValidator
 
 from helpers.utils import send_application_success_mail
-from jobs.models import Job
+from jobs.models import Job, Cohort
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 
 
@@ -91,6 +92,28 @@ class ApplicantSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_resume(self, value):
+        size_limit = 1 * 1024 * 1024
+        try:
+            if value.size > size_limit:
+                raise serializers.ValidationError(
+                    "Resume size cannot be greater than 1MB"
+                )
+        except:
+            pass    # leave other validation to database
+        return value
+
+    def validate_other_attachment(self, value):
+        size_limit = 1 * 1024 * 1024
+        try:
+            if value.size > size_limit:
+                raise serializers.ValidationError(
+                    "Attachment size cannot be greater than 1MB"
+                )
+        except:
+            pass    # leave other validation to database
+        return value
+
 
 class ApplicationSerializer(serializers.ModelSerializer):
     # applicant = ApplicantSerializer(write_only=True)
@@ -120,17 +143,33 @@ class ApplicationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        job = attrs.get('job')
+        try:
+            job = attrs['job']
+        except:
+            raise serializers.ValidationError(
+                "Application must be tied to a job"
+            )
+
+        try:
+            cohort = Cohort.objects.get(jobs=job)
+        except:
+            raise serializers.ValidationError(
+                "Job does not belong to a cohort"
+            )
+
+        if not cohort.application_end_date >= timezone.now():
+            raise serializers.ValidationError(
+                "No open application for job's cohort"
+            )
         applicant = attrs.get('applicant')
         application = Application.objects.filter(
-            job=job,
+            job__cohort=cohort,
             applicant=applicant
         ).exists()
         if application:
             raise serializers.ValidationError(
                 "Applicant already applied for the job"
             )
-        # print(attrs)
         return attrs
 
     def create(self, validated_data):
@@ -190,6 +229,7 @@ class ApplicationEmailListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicationEmail
         fields = (
+            'id',
             'type',
             'subject',
             'salutation',

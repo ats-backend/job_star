@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'djcelery_email',
     'celery',
     'django_celery_results',
+    'ckeditor',
 ]
 
 MIDDLEWARE = [
