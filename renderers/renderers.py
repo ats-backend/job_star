@@ -1,5 +1,7 @@
 from rest_framework.renderers import JSONRenderer
 
+from job_star.encryption import encrypt_data
+
 
 class CustomRender(JSONRenderer):
 
@@ -16,5 +18,6 @@ class CustomRender(JSONRenderer):
         else:
             response['success'] = True
             response['data'] = data
+            # response['data'] = encrypt_data(data)
 
         return super(CustomRender, self).render(response, accepted_media_type, renderer_context)

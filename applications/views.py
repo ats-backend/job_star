@@ -16,7 +16,8 @@ from helpers.utils import (
     send_application_shortlisted_mail, send_application_interview_mail,
     send_application_accepted_mail, send_application_rejected_mail, send_assessment_to_applicant
 )
-from job_star.encryption import encrypt_data
+from job_star.encryption import encrypt_data, decrypt_data
+from parsers.parsers import CustomJSONParser
 
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
@@ -40,7 +41,10 @@ class ObjectMixin:
 class DecryptionMixin(CreateAPIView, UpdateAPIView):
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
+        if request.data.get('data'):
+            dec_data = decrypt_data(request.data['data'])
+            print(dec_data)
+            request.data = dec_data
         return super(DecryptionMixin, self).post(request, *args, **kwargs)
 
 
@@ -378,13 +382,18 @@ class RejectedApplicationListAPIView(ListAPIView):
 
 
 class TrackApplicationAPIView(GenericAPIView):
+    parser_classes = (CustomJSONParser,)
 
     def post(self, request, *args, **kwargs):
         # decrypted_data = decrypt_data(request.data)
-        if request.data.get('application_id'):
+        try:
+            data = decrypt_data(request.data['data'])
+        except:
+            data = request.data
+        if data.get('application_id'):
             try:
                 application = Application.objects.get(
-                    application_id__iexact=request.data['application_id']
+                    application_id__iexact=data['application_id']
                 )
             except:
                 return Response(
