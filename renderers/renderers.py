@@ -17,7 +17,7 @@ class CustomRender(JSONRenderer):
             response['error'] = data
         else:
             response['success'] = True
-            response['data'] = data
-            # response['data'] = encrypt_data(data)
+            # response['data'] = data
+            response['data'] = encrypt_data(data)
 
         return super(CustomRender, self).render(response, accepted_media_type, renderer_context)

@@ -8,9 +8,11 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from applications.models import Application, Applicant
+from applications.models import Application, Applicant, ApplicationEmail
 from jobs.models import Job, Cohort, Courses
 
+
+# TODO Disable encryption before testing
 
 class ApplicationListAPIViewTest(APITestCase):
 
@@ -57,7 +59,7 @@ class ApplicationListAPIViewTest(APITestCase):
     @property
     def request_headers(self):
         headers = {
-            'HTTP_API_KEY': config('API_KEY'),
+            'HTTP_API_KEY': config('BK_API_KEY'),
             'HTTP_REQUEST_TS': config('REQUEST_TS'),
             'HTTP_HASH_KEY': config('HASH_KEY')
         }
@@ -172,23 +174,86 @@ class ApplicationListAPIViewTest(APITestCase):
         response = json.loads(res.content)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(response['success'], True)
-        # self.assertEqual(response['data']['application_status'], 'rejected')
+        self.assertEqual(response['data']['deleted'], True)
 
 
 class ApplicationEmailTemplateTest(APITestCase):
 
+    @classmethod
+    def setUpTestData(cls):
+        type = [
+            'Shortlisted', 'Invited for Interview',
+            'Accepted', 'Rejected', 'Invited for Assessment'
+        ]
+        for num in range(0,5):
+            ApplicationEmail.objects.create(
+                type=type[num],
+                subject='Email Test',
+                salutation='Hello',
+                body="This is a new email"
+            )
+
+    @property
+    def request_headers(self):
+        headers = {
+            'HTTP_API_KEY': config('BK_API_KEY'),
+            'HTTP_REQUEST_TS': config('REQUEST_TS'),
+            'HTTP_HASH_KEY': config('HASH_KEY')
+        }
+        return headers
+
     def test_get_all_email_templates(self):
-        pass
+        url = reverse('applications:emails')
+        self.client.credentials(**self.request_headers)
+        res = self.client.get(url, format='json')
+        response = json.loads(res.content)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['success'], True)
+        self.assertGreater(response['data']['count'], 0)
 
     def test_create_email_template(self):
-        pass
+        url = reverse('applications:emails')
+        data = {
+            'type': 'Completed Application',
+            'subject': 'Completed',
+            'salutation': 'Hi',
+            'body': 'uyiop[ojhghjk'
+        }
+        self.client.credentials(**self.request_headers)
+        response = self.client.post(url, data=data)
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_data['success'], True)
 
     def test_email_template_detail(self):
-        pass
+        url = reverse('applications:email_detail', args=[1])
+        self.client.credentials(**self.request_headers)
+        res = self.client.get(url, format='json')
+        response = json.loads(res.content)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['success'], True)
+        self.assertTrue(bool(response['data']['type']), True)
+        self.assertTrue(bool(response['data']['subject']), True)
+        self.assertTrue(bool(response['data']['body']), True)
 
     def test_delete_email_template(self):
-        pass
+        url = reverse('applications:delete_email', args=[1])
+        self.client.credentials(**self.request_headers)
+        res = self.client.delete(url, format='json')
+        response = json.loads(res.content)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['success'], True)
+        self.assertEqual(response['data']['deleted'], True)
 
     def test_get_deleted_email_templates(self):
-        pass
+        email_object = ApplicationEmail.objects.get(id=1)
+        email_object.is_deleted = True
+        email_object.save()
+        url = reverse('applications:trashed_emails')
+        self.client.credentials(**self.request_headers)
+        res = self.client.get(url, format='json')
+        response = json.loads(res.content)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['success'], True)
+        self.assertGreater(response['data']['count'], 0)
 

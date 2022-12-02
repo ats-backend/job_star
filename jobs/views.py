@@ -23,7 +23,7 @@ from .serializers import (
             )
 
 from renderers.renderers import CustomRender
-from permissions.permissions import IsAuthenticated, IsWebsiteFrontendAuthenticated
+from permissions.permissions import IsAuthenticated
 from utils.helpers import (
     course_create_assessment_server,
     course_update_assessment_server,
