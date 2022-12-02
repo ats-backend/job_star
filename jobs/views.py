@@ -23,7 +23,7 @@ from .serializers import (
             )
 
 from renderers.renderers import CustomRender
-from permissions.permissions import IsAuthenticated
+from permissions.permissions import IsAdminAuthenticated, IsAdminOrWebsiteFrontendAuthenticated
 from utils.helpers import (
     course_create_assessment_server,
     course_update_assessment_server,
@@ -43,6 +43,7 @@ class AdminCourseListAPIView(generics.ListAPIView):
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
+    permission_classes = (IsWebsiteFrontendAuthenticated,)
 
     def get_queryset(self):
         return Courses.active_courses.all()
@@ -66,6 +67,7 @@ class CohortListOnlyAPIView(generics.ListAPIView):
 
 
 class CourseDetailAPIView(APIView):
+    permission_classes = (IsWebsiteFrontendAuthenticated,)
 
     def get_object(self, pk):
         try:

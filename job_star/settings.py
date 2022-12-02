@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1', 'aptbk.afexats.com']
 
@@ -169,7 +169,7 @@ REST_FRAMEWORK = {
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'permissions.permissions.IsAuthenticated',
+        'permissions.permissions.IsAdminAuthenticated',
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'renderers.renderers.CustomRender',

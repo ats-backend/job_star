@@ -1,4 +1,5 @@
 from uuid import uuid4
+from ckeditor.fields import RichTextField
 
 from datetime import datetime
 from django.core.validators import FileExtensionValidator
@@ -23,7 +24,7 @@ class Courses(models.Model):
         max_length=250, verbose_name='Course Title',
         unique=True
     )
-    description = models.TextField(null=True, blank=True)
+    description = RichTextField(null=True, blank=True)
     image = models.ImageField(
         upload_to='course/',
         null=True,
@@ -127,7 +128,7 @@ class Job(models.Model):
         'Cohort', on_delete=models.CASCADE,
         related_name='jobs'
     )
-    requirement = models.TextField()
+    requirement = RichTextField()
     date_posted = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     created_by = models.CharField(max_length=200, null=True, blank=True)

@@ -14,6 +14,7 @@ def course_create_assessment_server(course_title, course_desc, course_uid):
         'description': course_desc,
         'uid': course_uid
     }
+    print(data)
     response = requests.post(url=endpoint, json=data)
     if str(response.status_code).startswith('2'):
         return "Created"
