@@ -22,8 +22,9 @@ class TestCourseCRUDAPI(APITestCase):
             Courses(title='Frontend Web development',
                     description='for frontend  only')
         ])
+        course_d = Courses.objects.get(id=2)
 
-        for cohort_number in range(1, 6):
+        for cohort_number in range(1, 4):
             cohort = Cohort.objects.create(
                 name=f"Ats {cohort_number}",
                 start_date="2022-11-30",
@@ -33,6 +34,14 @@ class TestCourseCRUDAPI(APITestCase):
             )
             cohort.courses.set(course)
             cohort.save()
+
+            Job.objects.create(
+                course=course_d,
+                cohort=cohort,
+                requirement='This short description for this job '
+            )
+
+
 
     @property
     def request_headers(self):
@@ -80,7 +89,7 @@ class TestCourseCRUDAPI(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_retrieve_all_cohorts(self):
-
+        self.client.credentials(**self.request_headers)
         response = self.client.get(reverse('job:cohorts'))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -122,6 +131,47 @@ class TestCourseCRUDAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_count_down_application_end_date(self):
-        response = ''
+        self.client.credentials(**self.request_headers)
+        response = self.client.get(reverse('job:count-down'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_job_create(self):
+        self.client.credentials(**self.request_headers)
+        payload = {
+            "course": 1,
+            "cohort": 1,
+            "requirement": "This is the small requirement on this job biko.",
+            'created_by': 'admin'
+        }
+        response = self.client.post(reverse('job:job-list-create'), data=payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_retrieve_all_jobs(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.get(reverse('job:job-list-create'))
+        # print(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_detail_job(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.get(reverse('job:job-detail', args=[1]), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_jobs(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.post(reverse('job:job-delete', args=[1]), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_edit_jobs(self):
+        payload = {
+            "course": 2,
+            "cohort": 1,
+            "requirement": "Job modified the small requirement on this job biko.",
+            "created_by": "admin"
+        }
+        self.client.credentials(**self.request_headers)
+        response = self.client.patch(reverse('job:job-detail', args=[1]), data=payload, format='json')
+        print('Hey:', response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

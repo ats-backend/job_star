@@ -38,7 +38,7 @@ urlpatterns = [
     path('latest-cohort', CohortCountDownAPIView.as_view(), name='count-down'),
 
     # Job urls
-    path('', JobListCreateAPIView.as_view()),
+    path('', JobListCreateAPIView.as_view(), name='job-list-create'),
     path('<int:pk>/detail', JobDetailAPIView.as_view(), name='job-detail'),
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
     path('<int:pk>/delete', JobDestroyAPIView.as_view(), name='job-delete'),
