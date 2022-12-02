@@ -29,7 +29,7 @@ class Courses(models.Model):
         null=True,
         blank=True
     )
-    uuid = models.UUIDField(default=uuid4, null=True, blank=True)
+    uuid = models.UUIDField(default=uuid4, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
