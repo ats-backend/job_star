@@ -57,7 +57,8 @@ class TestCourseCRUDAPI(APITestCase):
 
     def test_create_cohort(self):
         payload = {
-            "name": "ats 1.1", "courses": [
+            "name": "ats 1.1",
+            "courses": [
                     {
                         "title": "Mobile Development with dart"
                     },
@@ -75,7 +76,7 @@ class TestCourseCRUDAPI(APITestCase):
         self.client.credentials(**self.request_headers)
         res = self.client.post(reverse('job:cohort-create'), data=payload, format='json')
         response = json.loads(res.content)
-        print(response)
+        # print(response)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_retrieve_all_cohorts(self):
@@ -86,8 +87,41 @@ class TestCourseCRUDAPI(APITestCase):
         self.assertIsInstance(response.data['results'], list)
         self.assertGreater(len(response.data['results']), 0)
 
-    # def test_retrieve_one_cohort(self):
-    #     self.client.credentials(**self.request_headers)
-    #     response = self.client.get(reverse('job:cohort-detail', args=[4]), format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertIsInstance(response.data['results'], list)
+    def test_retrieve_one_cohort(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.get(reverse('job:cohort-detail', args=[1]), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # self.assertIsInstance(response.data[''], dict)
+
+    def test_update_cohort(self):
+        payload = {
+            "name": "ats 1.2",
+            "courses": [
+                {
+                    "title": "Mobile Development with dart"
+                },
+                {
+                    "title": "Product Management"
+                },
+                {
+                    "title": "Frontend Web development"
+                },
+            ], "cohort": 4,
+            "application_start_date": "2022-12-07T12:52:59+01:00",
+            "application_end_date": "2023-01-07T12:52:59+01:00",
+            "start_date": "2022-01-02", "end_date": "2022-11-09"
+        }
+        self.client.credentials(**self.request_headers)
+        response = self.client.put(reverse('job:cohort-update', args=[1]), data=payload, format='json')
+        res = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_cohort(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.post(reverse('job:cohort-delete', args=[1]), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_count_down_application_end_date(self):
+        response = ''
+
+

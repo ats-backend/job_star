@@ -33,9 +33,9 @@ urlpatterns = [
     path('cohort/<int:pk>', CohortDetailAPIView.as_view(), name='cohort-detail'),
     path('cohort-options', CohortListOnlyAPIView.as_view(), name='options'),
     path('cohort/<int:cohort_id>/course-options', CourseListOnlyAPIView.as_view()),
-    path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
-    path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
-    path('latest-cohort', CohortCountDownAPIView.as_view()),
+    path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view(), name='cohort-update'),
+    path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view(), name='cohort-delete'),
+    path('latest-cohort', CohortCountDownAPIView.as_view(), name='count-down'),
 
     # Job urls
     path('', JobListCreateAPIView.as_view()),
