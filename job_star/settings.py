@@ -61,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'logs.logs.ResponseLoggingMiddleware',
-    # 'job_star.middleware.EncryptionMiddleware',
 
 ]
 
@@ -169,9 +168,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
             'rest_framework_simplejwt.authentication.JWTAuthentication',
         ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'permissions.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'permissions.permissions.IsAuthenticated',
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'renderers.renderers.CustomRender',
     ]

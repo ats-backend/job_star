@@ -17,7 +17,8 @@ from helpers.utils import (
     send_application_accepted_mail, send_application_rejected_mail, send_assessment_to_applicant
 )
 from job_star.encryption import encrypt_data, decrypt_data
-from parsers.parsers import CustomJSONParser
+# from parsers.parsers import CustomJSONParser
+from permissions.permissions import IsAssessmentFrontendAuthenticated, IsAuthenticated
 
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
@@ -65,11 +66,15 @@ class CreateApplicationAPIView(CreateAPIView):
     parser_classes = (MultiPartParser, JSONParser,)
 
     def post(self, request, *args, **kwargs):
+        try:
+            request_data = decrypt_data(request.data['data'])
+        except:
+            request_data = request.data
         job_id = kwargs['job_id']
         try:
-            applicant = Applicant.objects.get(email__iexact=request.data['email'])
+            applicant = Applicant.objects.get(email__iexact=request_data['email'])
         except:
-            applicant_serializer = ApplicantSerializer(data=request.data)
+            applicant_serializer = ApplicantSerializer(data=request_data)
             applicant_serializer.is_valid(raise_exception=True)
             applicant = applicant_serializer.save()
         data = {
@@ -382,7 +387,7 @@ class RejectedApplicationListAPIView(ListAPIView):
 
 
 class TrackApplicationAPIView(GenericAPIView):
-    parser_classes = (CustomJSONParser,)
+    # parser_classes = (CustomJSONParser,)
 
     def post(self, request, *args, **kwargs):
         # decrypted_data = decrypt_data(request.data)
@@ -422,6 +427,9 @@ class TrackApplicationAPIView(GenericAPIView):
 
 
 class ValidateApplicationIDAPIView(GenericAPIView):
+    permission_classes = (
+        IsAuthenticated, IsAssessmentFrontendAuthenticated,
+    )
 
     def post(self, request, *args, **kwargs):
         application_id = request.data.get('application_id')

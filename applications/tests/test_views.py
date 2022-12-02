@@ -63,6 +63,10 @@ class ApplicationListAPIViewTest(APITestCase):
         }
         return headers
 
+    @property
+    def file_url(self):
+        return r'applications\tests\test.doc'
+
     def test_authorization(self):
         url = reverse('applications:applications')
         response = self.client.get(url, format='json')
@@ -85,8 +89,8 @@ class ApplicationListAPIViewTest(APITestCase):
             'first_name': 'First Name',
             'last_name': 'Last Name',
             'email': 'create@gmail.com',
-            'resume': open(r'job_star\media\resume\Document2.pdf', 'rb'),
-            'other_attachment': open(r'job_star\media\resume\Document2.pdf', 'rb')
+            'resume': open(self.file_url, 'rb'),
+            'other_attachment': open(self.file_url, 'rb')
         })
         self.client.credentials(**self.request_headers)
         response = self.client.post(url, data=data)
@@ -160,4 +164,31 @@ class ApplicationListAPIViewTest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(response['success'], True)
         self.assertEqual(response['data']['application_status'], 'rejected')
+
+    def test_delete_application(self):
+        url = reverse('applications:delete_application', args=[1])
+        self.client.credentials(**self.request_headers)
+        res = self.client.delete(url, format='json')
+        response = json.loads(res.content)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['success'], True)
+        # self.assertEqual(response['data']['application_status'], 'rejected')
+
+
+class ApplicationEmailTemplateTest(APITestCase):
+
+    def test_get_all_email_templates(self):
+        pass
+
+    def test_create_email_template(self):
+        pass
+
+    def test_email_template_detail(self):
+        pass
+
+    def test_delete_email_template(self):
+        pass
+
+    def test_get_deleted_email_templates(self):
+        pass
 
