@@ -52,17 +52,21 @@ class TestCourseCRUDAPI(APITestCase):
         }
         return headers
 
-    # def test_create_courses(self):
-    #     previous_course_count = Courses.objects.all()
-    #     payload = {'title': 'Programming is easy', 'description': 'The best way to programming'}
-    #     response = self.client.post(reverse('job:course-create'), data=payload)
-    #     self.assertEqual(Courses.objects.all().count(), previous_course_count + 1)
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEqual(response.data['title'], 'Programming is easy')
-    #
+    def test_create_courses(self):
+        self.client.credentials(**self.request_headers)
+        previous_course_count = Courses.objects.all()
+        payload = {
+            'title': 'Programming is easy',
+            'description': 'The best way to programming'
+        }
+        response = self.client.post(reverse('job:course-create'), data=payload)
+        self.assertEqual(Courses.objects.all().count(), previous_course_count + 1)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['title'], 'Programming is easy')
+
     # def test_list_of_courses(self):
     #     response = self.client.get(reverse('job:course-detail'))
-    #     pass
+    # #     pass
 
     def test_create_cohort(self):
         payload = {
@@ -164,14 +168,21 @@ class TestCourseCRUDAPI(APITestCase):
 
     def test_edit_jobs(self):
         payload = {
-            "course": 2,
+            "course": 1,
             "cohort": 1,
             "requirement": "Job modified the small requirement on this job biko.",
             "created_by": "admin"
         }
         self.client.credentials(**self.request_headers)
-        response = self.client.patch(reverse('job:job-detail', args=[1]), data=payload, format='json')
+        response = self.client.put(reverse('job:job-update', args=[1]), data=payload, format='json')
         print('Hey:', response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_job_application(self):
+        self.client.credentials(**self.request_headers)
+        response = self.client.get(reverse('job:applications', args=[1]), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 
 

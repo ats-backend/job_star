@@ -15,11 +15,15 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
 
     def basicConfig(self, **messages):
 
-        website_api_key = self.req.META.get('HTTP_API_KEY')
-        if website_api_key == config('API_KEY'):
-            self.request_by = 'website frontend'
+        api_key = self.req.META.get('HTTP_API_KEY')
+        if api_key == config('BK_API_KEY'):
+            self.request_by = 'Backend frontend'
+        elif api_key == config('API_KEY_FRONTEND'):
+            self.request_by = 'Admin frontend'
+        elif api_key == config('API_KEY_FOR_WEBSITE_FRONTEND'):
+            self.request_by = 'Website frontend'
         else:
-            self.request_by = 'admin frontend'
+            self.request_by = 'Assessment frontend'
 
         with open(file='app_jobs.log', mode='a') as file:
             handler = file.write(
