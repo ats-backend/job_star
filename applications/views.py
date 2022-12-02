@@ -447,7 +447,12 @@ class ApplicationEmailTemplateAPIView(ListCreateAPIView):
     queryset = ApplicationEmail.active_objects.all()
 
 
-class ApplicationEmailTemplateDetailAPIView(RetrieveUpdateAPIView):
+class ApplicationEmailTemplateDetailAPIView(RetrieveAPIView):
+    serializer_class = ApplicationEmailDetailSerializer
+    queryset = ApplicationEmail.active_objects.all()
+
+
+class ApplicationEmailTemplateEditAPIView(UpdateAPIView):
     serializer_class = ApplicationEmailDetailSerializer
     queryset = ApplicationEmail.active_objects.all()
 
