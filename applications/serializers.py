@@ -190,6 +190,7 @@ class ApplicationEmailListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicationEmail
         fields = (
+            'id',
             'type',
             'subject',
             'salutation',
