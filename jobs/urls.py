@@ -19,7 +19,7 @@ app_name = 'job'
 urlpatterns = [
     # courses urls
     path('courses/', CoursesListAPIView.as_view()),
-    path('courses/create', CoursesCreationAPIView.as_view()),
+    path('courses/create', CoursesCreationAPIView.as_view(), name='course-create'),
     path('all-courses/', AdminCourseListAPIView.as_view()),
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<uuid:uuid>/edit', CourseUpdateAPIView.as_view()),
@@ -31,11 +31,11 @@ urlpatterns = [
     path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
     path('cohort/create', CohortCreationAPIView.as_view(), name='cohort-create'),
     path('cohort/<int:pk>', CohortDetailAPIView.as_view(), name='cohort-detail'),
-    path('cohort-options', CohortListOnlyAPIView.as_view()),
+    path('cohort-options', CohortListOnlyAPIView.as_view(), name='options'),
     path('cohort/<int:cohort_id>/course-options', CourseListOnlyAPIView.as_view()),
-    path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view()),
-    path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view()),
-    path('latest-cohort', CohortCountDownAPIView.as_view()),
+    path('cohort/<int:pk>/edit', CohortUpdateAPIView.as_view(), name='cohort-update'),
+    path('cohort/<int:pk>/delete', CohortDestroyAPIView.as_view(), name='cohort-delete'),
+    path('latest-cohort', CohortCountDownAPIView.as_view(), name='count-down'),
 
     # Job urls
     path('', JobListCreateAPIView.as_view()),
