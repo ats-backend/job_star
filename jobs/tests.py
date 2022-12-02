@@ -9,6 +9,8 @@ from rest_framework import status
 
 from jobs.models import Courses, Cohort, Job
 
+# TODO : celery must be running before performing any CRUD on course
+# TODO : encryption must also be set to false
 
 class TestCourseCRUDAPI(APITestCase):
 
@@ -63,10 +65,6 @@ class TestCourseCRUDAPI(APITestCase):
         self.assertEqual(Courses.objects.all().count(), previous_course_count + 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['title'], 'Programming is easy')
-
-    # def test_list_of_courses(self):
-    #     response = self.client.get(reverse('job:course-detail'))
-    # #     pass
 
     def test_create_cohort(self):
         payload = {
