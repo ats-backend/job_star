@@ -1,10 +1,20 @@
 import requests
 
 from celery import shared_task
+from decouple import config
 
 from jobs.models import Courses
 
+
 endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
+
+def get_header():
+    head = {
+        'API-KEY': config('APPLICATION_BACKEND_API_KEY'),
+        'request_ts': config('REQUEST_TS'),
+        'hash_key': config('ASSESSMENT_HASH_KEY')
+    }
+    return head
 
 
 @shared_task()
@@ -15,7 +25,7 @@ def course_create_assessment_server(course_title, course_desc, course_uid):
         'uid': course_uid
     }
     print(data)
-    response = requests.post(url=endpoint, json=data)
+    response = requests.post(url=endpoint, json=data, headers=get_header())
     if str(response.status_code).startswith('2'):
         return "Created"
     return course_create_assessment_server.delay(
@@ -33,7 +43,7 @@ def course_update_assessment_server(course_uid, course_title, course_desc):
         'description': course_desc
     }
 
-    response = requests.put(url=endpoint + f"/{course_uid}", json=data)
+    response = requests.put(url=endpoint + f"/{course_uid}", json=data, headers=get_header())
     if str(response.status_code).startswith('2'):
         return 'Updated'
     elif response.status_code == 404:
@@ -50,7 +60,7 @@ def course_delete_assessment_server(is_deleted, course_uid):
     data = {
         'is_delete': is_deleted
     }
-    response = requests.delete(url=endpoint + f"/{course_uid}", data=data)
+    response = requests.delete(url=endpoint + f"/{course_uid}", data=data, headers=get_header())
     if str(response.status_code).startswith('2'):
         return 'Delete status changed'
     elif str(response.status_code).startswith('4'):
