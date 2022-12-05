@@ -135,6 +135,7 @@ class CohortUpdateAPIView(generics.UpdateAPIView):
 
 
 class CohortCountDownAPIView(GenericAPIView):
+    permission_classes = (IsAdminOrWebsiteFrontendAuthenticated,)
 
     def get(self, request):
         latest_cohort = Cohort.objects.filter(
