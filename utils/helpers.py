@@ -8,7 +8,7 @@ from jobs.models import Courses
 
 endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
 
-def get_header():
+def header():
     head = {
         'API-KEY': config('APPLICATION_BACKEND_API_KEY'),
         'request_ts': config('REQUEST_TS'),
@@ -24,8 +24,7 @@ def course_create_assessment_server(course_title, course_desc, course_uid):
         'description': course_desc,
         'uid': course_uid
     }
-    print(data)
-    response = requests.post(url=endpoint, json=data, headers=get_header())
+    response = requests.post(url=endpoint, json=data, headers=header())
     if str(response.status_code).startswith('2'):
         return "Created"
     return course_create_assessment_server.delay(
@@ -43,7 +42,7 @@ def course_update_assessment_server(course_uid, course_title, course_desc):
         'description': course_desc
     }
 
-    response = requests.put(url=endpoint + f"/{course_uid}", json=data, headers=get_header())
+    response = requests.put(url=endpoint + f"/{course_uid}", json=data, headers=header())
     if str(response.status_code).startswith('2'):
         return 'Updated'
     elif response.status_code == 404:
@@ -60,7 +59,7 @@ def course_delete_assessment_server(is_deleted, course_uid):
     data = {
         'is_delete': is_deleted
     }
-    response = requests.delete(url=endpoint + f"/{course_uid}", data=data, headers=get_header())
+    response = requests.delete(url=endpoint + f"/{course_uid}", data=data, headers=header())
     if str(response.status_code).startswith('2'):
         return 'Delete status changed'
     elif str(response.status_code).startswith('4'):
