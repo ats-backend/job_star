@@ -43,7 +43,7 @@ class AdminCourseListAPIView(generics.ListAPIView):
 
 class CoursesListAPIView(generics.ListAPIView):
     serializer_class = CoursesSerializers
-    permission_classes = (IsWebsiteFrontendAuthenticated,)
+    permission_classes = (IsAdminOrWebsiteFrontendAuthenticated,)
 
     def get_queryset(self):
         return Courses.active_courses.all()
@@ -67,7 +67,7 @@ class CohortListOnlyAPIView(generics.ListAPIView):
 
 
 class CourseDetailAPIView(APIView):
-    permission_classes = (IsWebsiteFrontendAuthenticated,)
+    permission_classes = (IsAdminOrWebsiteFrontendAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -237,4 +237,3 @@ class JobDestroyAPIView(GenericAPIView):
             data="Job is inactive",
             status=status.HTTP_200_OK
         )
-
