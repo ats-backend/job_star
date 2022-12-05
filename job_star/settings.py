@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['aptbk.afex.dev', 'localhost', '127.0.0.1', 'aptbk.afexats.com']
 
@@ -184,7 +184,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1",
     "https://assessbk.afexats.com",
-    "https://ats-track-application.netlify.app"
+    "https://ats-track-application.netlify.app",
+    "https://admin-ats.netlify.app",
+    "https://afex-tech-star-website.netlify.app",
+    "https://afex-ats-assessment.netlify.app"
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
