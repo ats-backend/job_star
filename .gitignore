@@ -8,3 +8,5 @@ venv
 *.log
 job_star/media/
 job_star/static/
+*dfghj.py
+dfghj.py
