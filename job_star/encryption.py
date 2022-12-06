@@ -21,11 +21,11 @@ def encrypt_data(data):
         indent=1,
         cls=DjangoJSONEncoder
     )
-    data_in_byte = bytes(json_data, 'utf-8')
-    cipher = AES.new(key_in_bytes, AES.MODE_CBC, iv)
-    encrypted_data = cipher.encrypt(pad(data_in_byte, AES.block_size))
-    data = b64encode(encrypted_data).decode('utf-8')
-    # result = json.dumps({'key': key, 'vector': vector, 'data': data})
+    # data_in_byte = bytes(json_data, 'utf-8')
+    # cipher = AES.new(key_in_bytes, AES.MODE_CBC, iv)
+    # encrypted_data = cipher.encrypt(pad(data_in_byte, AES.block_size))
+    # data = b64encode(encrypted_data).decode('utf-8')
+    # # result = json.dumps({'key': key, 'vector': vector, 'data': data})
     return data
 
 

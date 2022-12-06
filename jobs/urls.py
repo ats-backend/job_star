@@ -9,7 +9,9 @@ from .views import (CourseDetailAPIView,
                     CohortCreationAPIView, CohortDetailAPIView,
                     CohortDestroyAPIView, CohortCountDownAPIView,
                     CohortListOnlyAPIView,CourseListOnlyAPIView,
-                    AdminCourseListAPIView,
+                    AdminCourseListAPIView, JobPostedOneWeekAgo,
+                    JobPostedTwoWeeksAgo, JobPostedThreeWeeksAgo,
+                    JobPostedOneMonthAgo,
                     )
 
 from applications.views import ApplicationListAPIView
@@ -24,8 +26,6 @@ urlpatterns = [
     path('courses/<int:pk>', CourseDetailAPIView.as_view(), name='course-detail'),
     path('courses/<uuid:uuid>/edit', CourseUpdateAPIView.as_view()),
     path('courses/<uuid:uuid>/delete', CourseDeleteAPIView.as_view()),
-
-
 
     # Cohort urls
     path('cohorts', CohortListAPIView.as_view(), name='cohorts'),
@@ -43,5 +43,9 @@ urlpatterns = [
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
     path('<int:pk>/delete', JobDestroyAPIView.as_view(), name='job-delete'),
     path('<int:job_id>/applications', ApplicationListAPIView.as_view(), name='applications'),
+    path('job-posted-a-week-ago', JobPostedOneWeekAgo.as_view(), name='one-week-ago'),
+    path('job-posted-two-weeks-ago', JobPostedTwoWeeksAgo.as_view(), name='two-week-ago'),
+    path('job-posted-three-weeks-ago', JobPostedThreeWeeksAgo.as_view(), name='three-weeks-ago'),
+    path('job-posted-a-month-ago', JobPostedOneMonthAgo.as_view(), name='one-month-ago'),
 
 ]

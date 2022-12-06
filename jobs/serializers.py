@@ -401,3 +401,13 @@ class JobEditSerializers(serializers.ModelSerializer):
             'created_by': {'required': False},
             'title': {'required': False}
         }
+
+class JobPostedAgoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = (
+            'title',
+            'date_posted',
+            'created_by'
+        )
