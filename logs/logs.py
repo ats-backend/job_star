@@ -17,7 +17,7 @@ class ResponseLoggingMiddleware(MiddlewareMixin):
 
         api_key = self.req.META.get('HTTP_API_KEY')
         if api_key == config('BK_API_KEY'):
-            self.request_by = 'Backend frontend'
+            self.request_by = 'Backend'
         elif api_key == config('API_KEY_FRONTEND'):
             self.request_by = 'Admin frontend'
         elif api_key == config('API_KEY_FOR_WEBSITE_FRONTEND'):

@@ -1,5 +1,6 @@
 import requests
 from uuid import uuid4
+from datetime import datetime, timedelta
 
 from django.forms import model_to_dict
 from django.utils import timezone
@@ -14,13 +15,13 @@ from rest_framework import status
 
 from .models import Job, Cohort, Courses
 from .serializers import (
-            JobSerializers, JobListSerializers,
-            CoursesSerializers, CohortSerializers,
-            CourseDetailSerializer, CohortCountDownSerializer,
-            CohortUpdateSerializer, CourseOnlySerializer,
-            CohortOnlySerializer, CoursesCreateSerializers,
-            JobEditSerializers
-            )
+    JobSerializers, JobListSerializers,
+    CoursesSerializers, CohortSerializers,
+    CourseDetailSerializer, CohortCountDownSerializer,
+    CohortUpdateSerializer, CourseOnlySerializer,
+    CohortOnlySerializer, CoursesCreateSerializers,
+    JobEditSerializers, JobPostedAgoSerializer
+)
 
 from renderers.renderers import CustomRender
 from permissions.permissions import IsAdminAuthenticated, IsAdminOrWebsiteFrontendAuthenticated
@@ -128,7 +129,6 @@ class CohortDetailAPIView(generics.RetrieveAPIView):
     queryset = Cohort.objects.all()
 
 
-
 class CohortUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CohortUpdateSerializer
     queryset = Cohort.objects.all()
@@ -166,10 +166,10 @@ class CohortDestroyAPIView(GenericAPIView):
         )
 
 
-class JobListCreateAPIView(generics.ListAPIView):
+class JobListCreateAPIView(generics.ListCreateAPIView):
     queryset = Job.active_jobs.filter(
-            cohort__application_end_date__gt=timezone.now()
-        )
+        cohort__application_end_date__gt=timezone.now()
+    )
     serializer_class = JobSerializers
 
     def post(self, request):
@@ -238,3 +238,37 @@ class JobDestroyAPIView(GenericAPIView):
             data="Job is inactive",
             status=status.HTTP_200_OK
         )
+
+
+class JobPostedOneWeekAgo(generics.ListAPIView):
+    serializer_class = JobPostedAgoSerializer
+
+    def get_queryset(self):
+        one_week_ago = timezone.now() - timedelta(days=7)
+        print(one_week_ago)
+        return Job.active_jobs.filter(date_posted=one_week_ago)
+
+
+class JobPostedTwoWeeksAgo(generics.ListAPIView):
+    serializer_class = JobPostedAgoSerializer
+
+    def get_queryset(self):
+        two_weeks_ago = timezone.now() - timedelta(days=14)
+        print(two_weeks_ago)
+        return Job.active_jobs.filter(date_posted=two_weeks_ago)
+
+
+class JobPostedThreeWeeksAgo(generics.ListAPIView):
+    serializer_class = JobPostedAgoSerializer
+
+    def get_queryset(self):
+        three_weeks_ago = timezone.now() - timedelta(days=21)
+        return Job.active_jobs.filter(date_posted=three_weeks_ago)
+
+
+class JobPostedOneMonthAgo(generics.ListAPIView):
+    serializer_class = JobPostedAgoSerializer
+
+    def get_queryset(self):
+        one_month_ago = timezone.now() - timedelta(days=29)
+        return Job.active_jobs.filter(date_posted=one_month_ago)
