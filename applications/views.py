@@ -391,10 +391,16 @@ class TrackApplicationAPIView(GenericAPIView):
         try:
             dec_data = decrypt_data(request.data['data'])
             request._full_data = dec_data
-        except:
-            # data = request.data
+        except KeyError:
+            # request_data = request.data
             return Response(
                 data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
                 status=status.HTTP_400_BAD_REQUEST
             )
         if request.data.get('application_id'):
@@ -437,12 +443,19 @@ class ValidateApplicationIDAPIView(GenericAPIView):
         try:
             dec_data = decrypt_data(request.data['data'])
             request._full_data = dec_data
-        except:
+        except KeyError:
             # request_data = request.data
             return Response(
                 data="Got a plain data instead of encrypted data",
                 status=status.HTTP_400_BAD_REQUEST
             )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         application_id = request.data.get('application_id')
         data = urlsafe_base64_decode(application_id).decode('utf-8')
         request.data['application_id'] = data
