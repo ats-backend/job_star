@@ -53,11 +53,15 @@ class IsAdminOrWebsiteFrontendAuthenticated(BasePermission):
         local_secret_key = config('SECRET_KEY_FOR_WEBSITE_FRONTEND')
         local_api_key_for_admin = config('BK_API_KEY')
         local_secret_key_for_admin = config('BK_SECRET_KEY')
+        local_api_key_for_admin_frontend = config('API_KEY_FRONTEND')
+        local_secret_key_for_admin_frontend = config('SECRET_KEY_FRONTEND')
         try:
             if API_KEY == local_api_key:
                 de_hash = local_api_key + local_secret_key + request_ts
             elif API_KEY == local_api_key_for_admin:
-                de_hash = local_secret_key_for_admin + local_secret_key_for_admin + request_ts
+                de_hash = local_api_key_for_admin + local_secret_key_for_admin + request_ts
+            elif API_KEY == local_api_key_for_admin_frontend:
+                de_hash = local_api_key_for_admin_frontend + local_secret_key_for_admin_frontend + request_ts
             else:
                 de_hash = None
             hash = hashlib.sha256(de_hash.encode('utf8')).hexdigest()
