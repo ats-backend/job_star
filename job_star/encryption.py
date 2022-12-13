@@ -11,8 +11,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 
 def encrypt_data(data):
-    key = config('ENCRYPTION_KEY')
-    vector = config('ENCRYPTION_VECTOR')
+    key = config('KEY')
+    vector = config('IV')
     key_in_bytes = b64decode(key)
     iv = b64decode(vector)
     json_data = json.dumps(
