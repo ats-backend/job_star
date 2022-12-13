@@ -186,7 +186,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://assessbk.afexats.com",
     "https://ats-track-application.netlify.app",
     "https://admin-ats.netlify.app",
-    "https://afex-tech-star-website.netlify.app",
+    "https://afex-web-project.netlify.app",
     "https://afex-ats-assessment.netlify.app"
 ]
 
