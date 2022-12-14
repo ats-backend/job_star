@@ -22,17 +22,16 @@ from .serializers import (
     CohortOnlySerializer, CoursesCreateSerializers,
     JobEditSerializers, JobPostedAgoSerializer
 )
-
+from job_star.encryption import decrypt_data
+from helpers.mixins import DecryptionMixin
 from renderers.renderers import CustomRender
-from permissions.permissions import IsAdminAuthenticated, IsAdminOrWebsiteFrontendAuthenticated
+from permissions.permissions import IsAdminOrWebsiteFrontendAuthenticated
 from utils.helpers import (
-    course_create_assessment_server,
-    course_update_assessment_server,
     course_delete_assessment_server
 )
 
 
-class CoursesCreationAPIView(generics.CreateAPIView):
+class CoursesCreationAPIView(DecryptionMixin, generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
 
@@ -85,7 +84,7 @@ class CourseDetailAPIView(APIView):
         )
 
 
-class CourseUpdateAPIView(generics.UpdateAPIView):
+class CourseUpdateAPIView(DecryptionMixin, generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
     lookup_field = 'uuid'
@@ -119,7 +118,7 @@ class CohortListAPIView(generics.ListAPIView):
     queryset = Cohort.objects.all()
 
 
-class CohortCreationAPIView(generics.CreateAPIView):
+class CohortCreationAPIView(DecryptionMixin, generics.CreateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
 
@@ -129,7 +128,7 @@ class CohortDetailAPIView(generics.RetrieveAPIView):
     queryset = Cohort.objects.all()
 
 
-class CohortUpdateAPIView(generics.UpdateAPIView):
+class CohortUpdateAPIView(DecryptionMixin, generics.UpdateAPIView):
     serializer_class = CohortUpdateSerializer
     queryset = Cohort.objects.all()
 
@@ -143,8 +142,10 @@ class CohortCountDownAPIView(GenericAPIView):
             is_deleted=False
         )
         serializer = CohortCountDownSerializer(latest_cohort, many=True)
-        return Response(data=serializer.data,
-                        status=status.HTTP_200_OK)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 
 class CohortDestroyAPIView(GenericAPIView):
@@ -173,6 +174,19 @@ class JobListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = JobSerializers
 
     def post(self, request):
+        try:
+            dec_type = decrypt_data(request.data['data'])
+            request._full_data = dec_type
+        except KeyError:
+            return Response(
+                data="Plain data sent instead of an encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer = JobSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -209,6 +223,19 @@ class JobUpdateAPIView(APIView):
             raise Http404
 
     def put(self, request, pk):
+        try:
+            dec_type = decrypt_data(request.data['data'])
+            request._full_data = dec_type
+        except KeyError:
+            return Response(
+                data="Plain data sent instead of an encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         job = self.get_object(pk)
         serializer = JobEditSerializers(job, data=request.data)
         if serializer.is_valid():
@@ -240,35 +267,32 @@ class JobDestroyAPIView(GenericAPIView):
         )
 
 
-class JobPostedOneWeekAgo(generics.ListAPIView):
+class JobPostedToday(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        one_week_ago = timezone.now() - timedelta(days=7)
-        print(one_week_ago)
-        return Job.active_jobs.filter(date_posted=one_week_ago)
+        today = timezone.now()
+        return Job.active_jobs.filter(date_posted=today)
 
 
-class JobPostedTwoWeeksAgo(generics.ListAPIView):
+class JobPostedOneWeeksAgo(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        two_weeks_ago = timezone.now() - timedelta(days=14)
-        print(two_weeks_ago)
+        two_weeks_ago = timezone.now().date() - timedelta(days=7)
         return Job.active_jobs.filter(date_posted=two_weeks_ago)
 
 
-class JobPostedThreeWeeksAgo(generics.ListAPIView):
+class JobPostedTwoWeeksAgo(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        three_weeks_ago = timezone.now() - timedelta(days=21)
+        three_weeks_ago = timezone.now() - timedelta(days=14)
         return Job.active_jobs.filter(date_posted=three_weeks_ago)
 
 
-class JobPostedOneMonthAgo(generics.ListAPIView):
+class AllJobsPosted(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        one_month_ago = timezone.now() - timedelta(days=29)
-        return Job.active_jobs.filter(date_posted=one_month_ago)
+        return Job.active_jobs.all()
