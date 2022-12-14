@@ -60,13 +60,18 @@ class CreateApplicationAPIView(CreateAPIView):
         try:
             dec_type = decrypt_data(request.data['data'])
             request._full_data = dec_type
+
         except KeyError:
-            # request._full_data = request.data
-            pass
-            # return Response(
-            #     data="Got a plain data instead of encrypted data",
-            #     status=status.HTTP_400_BAD_REQUEST
-            # )
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception as e:
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         job_id = kwargs['job_id']
         try:
             applicant = Applicant.objects.get(email__iexact=request.data['email'])
