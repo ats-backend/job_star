@@ -10,7 +10,7 @@ endpoint = f"https://assessbk.afexats.com/api/assessment/application-type"
 
 def header():
     head = {
-        'api-key': config('APPLICATION_BACKEND_API_KEY'),
+        'api-key': config('ASSESSMENT_BACKEND_API_KEY'),
         'request-ts': config('REQUEST_TS'),
         'hash-key': config('ASSESSMENT_HASH_KEY')
     }
