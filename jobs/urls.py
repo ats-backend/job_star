@@ -43,8 +43,8 @@ urlpatterns = [
     path('<int:pk>/update', JobUpdateAPIView.as_view(), name='job-update'),
     path('<int:pk>/delete', JobDestroyAPIView.as_view(), name='job-delete'),
     path('<int:job_id>/applications', ApplicationListAPIView.as_view(), name='applications'),
-    path('job-posted-today', JobPostedToday.as_view(), name='one-week-ago'),
-    path('job-posted-a-week-ago', JobPostedOneWeeksAgo.as_view(), name='two-week-ago'),
-    path('job-posted-two-weeks-ago', JobPostedTwoWeeksAgo.as_view(), name='three-weeks-ago'),
-    path('job-posted-all-time', AllJobsPosted.as_view(), name='one-month-ago'),
+    path('today', JobPostedToday.as_view(), name='one-week-ago'),
+    path('a-week-ago', JobPostedOneWeeksAgo.as_view(), name='two-week-ago'),
+    path('two-weeks-ago', JobPostedTwoWeeksAgo.as_view(), name='three-weeks-ago'),
+    path('all-time', AllJobsPosted.as_view(), name='one-month-ago'),
 ]
