@@ -279,16 +279,16 @@ class JobPostedOneWeeksAgo(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        two_weeks_ago = timezone.now().date() - timedelta(days=7)
-        return Job.active_jobs.filter(date_posted=two_weeks_ago)
+        one_week_ago = timezone.now().date() - timedelta(days=7)
+        return Job.active_jobs.filter(date_posted__gte=one_week_ago)
 
 
 class JobPostedTwoWeeksAgo(DecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
-        three_weeks_ago = timezone.now() - timedelta(days=14)
-        return Job.active_jobs.filter(date_posted=three_weeks_ago)
+        two_weeks_ago = timezone.now() - timedelta(days=14)
+        return Job.active_jobs.filter(date_posted__gte=two_weeks_ago)
 
 
 class AllJobsPosted(DecryptionMixin, generics.ListAPIView):
