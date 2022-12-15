@@ -21,6 +21,7 @@ def send_application_success_mail(recipient):
             to=[recipient.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
         # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
@@ -42,6 +43,7 @@ def send_application_shortlisted_mail(recipient):
             to=[recipient.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
         # print("Mail status:", status)
     except ApplicationEmail.DoesNotExist:
@@ -63,6 +65,7 @@ def send_application_interview_mail(recipient):
             to=[recipient.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
     except ApplicationEmail.DoesNotExist:
         pass
@@ -83,6 +86,7 @@ def send_application_accepted_mail(recipient):
             to=[recipient.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
     except ApplicationEmail.DoesNotExist:
         pass
@@ -103,6 +107,7 @@ def send_application_rejected_mail(recipient):
             to=[recipient.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
     except ApplicationEmail.DoesNotExist:
         pass
@@ -118,9 +123,10 @@ def send_assessment_to_applicant(application):
         encoded_params = urlsafe_base64_encode(force_bytes(application_id))
         applicant = application.applicant
         url = f"{config('ASSESSMENT_URL')}taketest/invitation/?uid={encoded_params}"
+        link = "<a href='url' target='blank'>Take Assessment</a>"
         subject = email.subject
         message = f"{email.salutation} {applicant.first_name},\n {email.body}" \
-                  f"\n{url}"
+                  f"\n{link}"
 
         mail = EmailMessage(
             subject,
@@ -128,6 +134,7 @@ def send_assessment_to_applicant(application):
             to=[applicant.email],
             from_email=settings.EMAIL_HOST_USER
         )
+        mail.content_subtype = 'html'
         status = mail.send()
     except ApplicationEmail.DoesNotExist:
         pass
