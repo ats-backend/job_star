@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from job_star.encryption import decrypt_data
 
 
-class DecryptionMixin:
+class GenericDecryptionMixin:
 
     def post(self, request, *args, **kwargs):
         try:
@@ -17,7 +17,7 @@ class DecryptionMixin:
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return super(DecryptionMixin, self).post(request, *args, **kwargs)
+        return super(GenericDecryptionMixin, self).post(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         try:
@@ -29,7 +29,7 @@ class DecryptionMixin:
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return super(DecryptionMixin, self).put(request, *args, **kwargs)
+        return super(GenericDecryptionMixin, self).put(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
         try:
@@ -41,4 +41,26 @@ class DecryptionMixin:
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return super(DecryptionMixin, self).patch(request, *args, **kwargs)
+        return super(GenericDecryptionMixin, self).patch(request, *args, **kwargs)
+
+
+class CustomDecryptionMixin:
+
+    def post(self, request, *args, **kwargs):
+        try:
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
+        except KeyError:
+            # request_data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return self.post(request, *args, **kwargs)
