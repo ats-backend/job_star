@@ -5,14 +5,14 @@ from .views import (
     ApplicationDetailAPIView, ApplicantListAPIView, ApplicantDetailAPIView,
     InvitedApplicationListAPIView, PendingApplicationListAPIView,
     RejectedApplicationListAPIView, SetAcceptedApplicationAPIView,
-    SetInvitedApplicationAPIView, SetRejectedApplicationAPIView,
+    SetInvitedForInterviewAPIView, SetRejectedApplicationAPIView,
     TrackApplicationAPIView, SetShortlistedApplicationAPIView,
     ShortlistedApplicationListAPIView, SetPassedApplicationTestAPIView,
     SetFailedApplicationTestAPIView, ValidateApplicationIDAPIView, ApplicationEmailTemplateAPIView,
     DeleteApplicationAPIView, DeleteApplicantAPIView, DeleteEmailTemplateAPIView,
     ApplicationEmailTemplateDetailAPIView, DeletedApplicationAPIView,
     DeletedApplicantAPIView, DeletedEmailTemplateAPIView, SendAssessmentToApplicantAPIView,
-    ApplicationEmailTemplateEditAPIView
+    ApplicationEmailTemplateEditAPIView, SetInvitedForAssessmentAPIView
 )
 
 app_name = 'applications'
@@ -36,7 +36,8 @@ urlpatterns = [
     path('shortlisted', ShortlistedApplicationListAPIView.as_view(), name='shortlisted_applications'),
 
     path('<int:pk>/set-accepted', SetAcceptedApplicationAPIView.as_view(), name='accept'),
-    path('<int:pk>/set-invited', SetInvitedApplicationAPIView.as_view(), name='invite'),
+    path('<int:pk>/set-invited', SetInvitedForInterviewAPIView.as_view(), name='invite'),
+    path('<int:pk>/set-invited-for-assessment', SetInvitedForAssessmentAPIView.as_view(), name='invite'),
     path('<int:pk>/set-shortlisted', SetShortlistedApplicationAPIView.as_view(), name='shortlist'),
     path('<int:pk>/set-rejected', SetRejectedApplicationAPIView.as_view(), name='reject'),
     path('<int:pk>/set-passed', SetPassedApplicationTestAPIView.as_view(), name='passed'),

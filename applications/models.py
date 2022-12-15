@@ -156,7 +156,7 @@ class ApplicationStatus(models.Model):
         related_name='application_status'
     )
     status = models.CharField(
-        max_length=11,
+        max_length=30,
         default='pending',
     )
     activity = models.CharField(max_length=50)

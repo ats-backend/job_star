@@ -12,7 +12,7 @@ from rest_framework.generics import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from helpers.mixins import DecryptionMixin
+from helpers.mixins import GenericDecryptionMixin, CustomDecryptionMixin
 from helpers.utils import (
     send_application_shortlisted_mail, send_application_interview_mail,
     send_application_accepted_mail, send_application_rejected_mail, send_assessment_to_applicant
@@ -106,7 +106,7 @@ class ApplicantListAPIView(ListAPIView):
     queryset = Applicant.active_objects.all()
 
 
-class ApplicantDetailAPIView(DecryptionMixin, RetrieveUpdateAPIView):
+class ApplicantDetailAPIView(GenericDecryptionMixin, RetrieveUpdateAPIView):
     serializer_class = ApplicantSerializer
     queryset = Applicant.objects.all()
 
@@ -122,8 +122,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="shortlisted",
                     activity="Shortlisted for Assessment",
-                    details="You have passed the application stage and "
-                            "have been invited to take an assesment."
+                    details="After reviewing all applications, yours was shortlisted"
                 )
             except IntegrityError:
                 latest_status = ApplicationStatus.objects.filter(
@@ -150,7 +149,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
         )
 
 
-class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
+class SetInvitedForInterviewAPIView(ObjectMixin, GenericAPIView):
     queryset = Application.active_objects.all()
 
     def post(self, request, *args, **kwargs):
@@ -161,8 +160,7 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application=application,
                     status="invited",
                     activity="Invited for Interview",
-                    details="You have completed your application and "
-                            "will receive a mail when there is an update"
+                    details="After reviewing all applications, you've been invited for interview"
                 )
             except IntegrityError:
                 latest_status = ApplicationStatus.objects.filter(
@@ -182,6 +180,44 @@ class SetInvitedApplicationAPIView(ObjectMixin, GenericAPIView):
                 'application_status': application_status.status
             }
             send_application_interview_mail(application.applicant)
+            return Response(data=data, status=status.HTTP_200_OK)
+        return Response(
+            data="No such application exists!",
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+class SetInvitedForAssessmentAPIView(ObjectMixin, GenericAPIView):
+    queryset = Application.active_objects.all()
+
+    def post(self, request, *args, **kwargs):
+        application = self.get_object()
+        if application:
+            try:
+                application_status = ApplicationStatus.objects.create(
+                    application=application,
+                    status="invited for assessment",
+                    activity="Invited for Assessment",
+                    details="After reviewing all applications, you've been invited to take assessment"
+                )
+            except IntegrityError:
+                latest_status = ApplicationStatus.objects.filter(
+                    application=application
+                ).first()
+                if latest_status.status.lower() != "invited for assessment":
+                    return Response(
+                        data=f"Application status cannot be changed"
+                             f" to invited for assessment after {latest_status.status}",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                return Response(
+                    data="Application status is already set to invited for assessment",
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            data = {
+                'application_status': application_status.status
+            }
+            send_assessment_to_applicant(application)
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(
             data="No such application exists!",
@@ -388,11 +424,11 @@ class RejectedApplicationListAPIView(ListAPIView):
     serializer_class = ApplicationSerializer
 
 
-class TrackApplicationAPIView(GenericAPIView):
+class TrackApplicationAPIView(CustomDecryptionMixin, GenericAPIView):
     # parser_classes = (CustomJSONParser,)
 
     def post(self, request, *args, **kwargs):
-        # decrypted_data = decrypt_data(request.data)
+        # req = super(TrackApplicationAPIView, self).post(request, *args, **kwargs)
         try:
             dec_data = decrypt_data(request.data['data'])
             request._full_data = dec_data
@@ -439,12 +475,13 @@ class TrackApplicationAPIView(GenericAPIView):
         )
 
 
-class ValidateApplicationIDAPIView(GenericAPIView):
+class ValidateApplicationIDAPIView(CustomDecryptionMixin, GenericAPIView):
     permission_classes = (
         IsAdminOrAssessmentFrontendAuthenticated,
     )
 
     def post(self, request, *args, **kwargs):
+        # super(ValidateApplicationIDAPIView, self).post(request, *args, **kwargs)
         try:
             dec_data = decrypt_data(request.data['data'])
             request._full_data = dec_data
@@ -462,7 +499,13 @@ class ValidateApplicationIDAPIView(GenericAPIView):
             )
 
         application_id = request.data.get('application_id')
-        data = urlsafe_base64_decode(application_id).decode('utf-8')
+        try:
+            data = urlsafe_base64_decode(application_id).decode('utf-8')
+        except UnicodeError:
+            return Response(
+                data="Sorry, the data is not same as the encoded id",
+                status=status.HTTP_400_BAD_REQUEST
+            )
         request.data['application_id'] = data
         serializer = TrackApplicationSerializer(
             data=request.data
@@ -488,7 +531,7 @@ class ValidateApplicationIDAPIView(GenericAPIView):
         )
 
 
-class ApplicationEmailTemplateAPIView(DecryptionMixin, ListCreateAPIView):
+class ApplicationEmailTemplateAPIView(GenericDecryptionMixin, ListCreateAPIView):
     serializer_class = ApplicationEmailListSerializer
     queryset = ApplicationEmail.active_objects.all()
 
@@ -498,7 +541,7 @@ class ApplicationEmailTemplateDetailAPIView(RetrieveAPIView):
     queryset = ApplicationEmail.active_objects.all()
 
 
-class ApplicationEmailTemplateEditAPIView(DecryptionMixin, UpdateAPIView):
+class ApplicationEmailTemplateEditAPIView(GenericDecryptionMixin, UpdateAPIView):
     serializer_class = ApplicationEmailDetailSerializer
     queryset = ApplicationEmail.active_objects.all()
 
