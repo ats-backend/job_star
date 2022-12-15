@@ -63,4 +63,4 @@ class CustomDecryptionMixin:
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return self.post(request, *args, **kwargs)
+        return

@@ -30,6 +30,7 @@ from .serializers import (
 )
 from renderers.renderers import CustomRender
 
+
 # Create your views here.
 
 
@@ -253,11 +254,11 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application_status = ApplicationStatus.objects.create(
                         application=application,
                         status="accepted",
-                        activity=f"Accepted Application {number_of_accepted_time+1}",
+                        activity=f"Accepted Application {number_of_accepted_time + 1}",
                         details="We are pleased to inform you that you have "
-                            "been selected for the AFEX TECH STARS. More "
-                            "details on this will be sent to you by mail. "
-                            "Congratulations."
+                                "been selected for the AFEX TECH STARS. More "
+                                "details on this will be sent to you by mail. "
+                                "Congratulations."
                     )
                     data = {
                         'application_status': application_status.status
@@ -306,7 +307,7 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application_status = ApplicationStatus.objects.create(
                         application=application,
                         status="rejected",
-                        activity=f"Rejected Application {number_of_rejected+1}",
+                        activity=f"Rejected Application {number_of_rejected + 1}",
                         details="After reviewing your application,"
                                 " we are sorry to inform you that we will "
                                 "not be proceeding with your application. "
@@ -331,60 +332,112 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
         )
 
 
-class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.active_objects.all()
+class SetPassedApplicationTestAPIView(CustomDecryptionMixin, GenericAPIView):
 
     def post(self, request, *args, **kwargs):
-        application = self.get_object()
-        if application:
+        # req = super(SetPassedApplicationTestAPIView, self).post(request, *args, **kwargs)
+        try:
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
+        except KeyError:
+            # request_data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data.get('application_id'):
             try:
-                application_status = ApplicationStatus.objects.create(
-                    application=application,
-                    status="passed",
-                    activity="Passed Assessment",
-                    details="You have passed your assessment and will "
-                            "receive a mail when there is an update"
+                application = Application.objects.get(
+                    application_id__iexact=request.data['application_id']
                 )
-            except IntegrityError:
+                try:
+                    application_status = ApplicationStatus.objects.create(
+                        application=application,
+                        status="passed",
+                        activity="Passed Assessment",
+                        details="You have passed your assessment and will "
+                                "receive a mail when there is an update"
+                    )
+                    data = {
+                        'application_status': application_status.status
+                    }
+                    return Response(data=data, status=status.HTTP_200_OK)
+                except IntegrityError:
+                    return Response(
+                        data="Application status is already set to passed",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except:
                 return Response(
-                    data="Application status is already set to passed",
-                    status=status.HTTP_400_BAD_REQUEST
+                    data="No such application exists",
+                    status=status.HTTP_404_NOT_FOUND
                 )
-            data = {
-                'application_status': application_status.status
-            }
-            return Response(data=data, status=status.HTTP_200_OK)
+        data = {
+            'application_id': "This field is required"
+        }
         return Response(
-            data="No such application exists!",
+            data=data,
             status=status.HTTP_404_NOT_FOUND
         )
 
 
-class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.active_objects.all()
+class SetFailedApplicationTestAPIView(CustomDecryptionMixin, GenericAPIView):
 
     def post(self, request, *args, **kwargs):
-        application = self.get_object()
-        if application:
+        # super(SetFailedApplicationTestAPIView, self).post(request, *args, **kwargs)
+        try:
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
+        except KeyError:
+            # request_data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data.get('application_id'):
             try:
-                application_status = ApplicationStatus.objects.create(
-                    application=application,
-                    status="failed",
-                    activity="Failed Assessment",
-                    details="You have failed your assessment and will "
-                            "receive a mail when there is an update"
+                application = Application.objects.get(
+                    application_id__iexact=request.data['application_id']
                 )
-            except IntegrityError:
+                try:
+                    application_status = ApplicationStatus.objects.create(
+                        application=application,
+                        status="passed",
+                        activity="Failed Assessment",
+                        details="You have failed your assessment and will "
+                                "receive a mail when there is an update"
+                    )
+                    data = {
+                        'application_status': application_status.status
+                    }
+                    return Response(data=data, status=status.HTTP_200_OK)
+                except IntegrityError:
+                    return Response(
+                        data="Application status is already set to failed",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except:
                 return Response(
-                    data="Application status is already set to failed",
-                    status=status.HTTP_400_BAD_REQUEST
+                    data="No such application exists",
+                    status=status.HTTP_404_NOT_FOUND
                 )
-            data = {
-                'application_status': application_status.status
-            }
-            return Response(data=data, status=status.HTTP_200_OK)
+        data = {
+            'application_id': "This field is required"
+        }
         return Response(
-            data="No such application exists!",
+            data=data,
             status=status.HTTP_404_NOT_FOUND
         )
 

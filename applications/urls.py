@@ -40,8 +40,8 @@ urlpatterns = [
     path('<int:pk>/set-invited-for-assessment', SetInvitedForAssessmentAPIView.as_view(), name='invite'),
     path('<int:pk>/set-shortlisted', SetShortlistedApplicationAPIView.as_view(), name='shortlist'),
     path('<int:pk>/set-rejected', SetRejectedApplicationAPIView.as_view(), name='reject'),
-    path('<int:pk>/set-passed', SetPassedApplicationTestAPIView.as_view(), name='passed'),
-    path('<int:pk>/set-failed', SetFailedApplicationTestAPIView.as_view(), name='failed'),
+    path('set-passed', SetPassedApplicationTestAPIView.as_view(), name='passed'),
+    path('set-failed', SetFailedApplicationTestAPIView.as_view(), name='failed'),
 
     path('track', TrackApplicationAPIView.as_view(), name='track'),
     path('validate', ValidateApplicationIDAPIView.as_view(), name='validate'),
