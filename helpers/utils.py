@@ -120,7 +120,7 @@ def send_assessment_to_applicant(application):
         url = f"{config('ASSESSMENT_URL')}taketest/invitation/?uid={encoded_params}"
         subject = email.subject
         message = f"{email.salutation} {applicant.first_name},\n {email.body}" \
-                  f"{url}"
+                  f"\n{url}"
 
         mail = EmailMessage(
             subject,

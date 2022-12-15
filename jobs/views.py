@@ -23,7 +23,7 @@ from .serializers import (
     JobEditSerializers, JobPostedAgoSerializer
 )
 from job_star.encryption import decrypt_data
-from helpers.mixins import DecryptionMixin
+from helpers.mixins import GenericDecryptionMixin
 from renderers.renderers import CustomRender
 from permissions.permissions import IsAdminOrWebsiteFrontendAuthenticated
 from utils.helpers import (
@@ -31,7 +31,7 @@ from utils.helpers import (
 )
 
 
-class CoursesCreationAPIView(DecryptionMixin, generics.CreateAPIView):
+class CoursesCreationAPIView(GenericDecryptionMixin, generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
 
@@ -84,7 +84,7 @@ class CourseDetailAPIView(APIView):
         )
 
 
-class CourseUpdateAPIView(DecryptionMixin, generics.UpdateAPIView):
+class CourseUpdateAPIView(GenericDecryptionMixin, generics.UpdateAPIView):
     serializer_class = CoursesSerializers
     queryset = Courses.objects.all()
     lookup_field = 'uuid'
@@ -118,7 +118,7 @@ class CohortListAPIView(generics.ListAPIView):
     queryset = Cohort.objects.all()
 
 
-class CohortCreationAPIView(DecryptionMixin, generics.CreateAPIView):
+class CohortCreationAPIView(GenericDecryptionMixin, generics.CreateAPIView):
     serializer_class = CohortSerializers
     queryset = Cohort.objects.all()
 
@@ -128,7 +128,7 @@ class CohortDetailAPIView(generics.RetrieveAPIView):
     queryset = Cohort.objects.all()
 
 
-class CohortUpdateAPIView(DecryptionMixin, generics.UpdateAPIView):
+class CohortUpdateAPIView(GenericDecryptionMixin, generics.UpdateAPIView):
     serializer_class = CohortUpdateSerializer
     queryset = Cohort.objects.all()
 
@@ -267,7 +267,7 @@ class JobDestroyAPIView(GenericAPIView):
         )
 
 
-class JobPostedToday(DecryptionMixin, generics.ListAPIView):
+class JobPostedToday(GenericDecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
@@ -275,7 +275,7 @@ class JobPostedToday(DecryptionMixin, generics.ListAPIView):
         return Job.active_jobs.filter(date_posted=today)
 
 
-class JobPostedOneWeeksAgo(DecryptionMixin, generics.ListAPIView):
+class JobPostedOneWeeksAgo(GenericDecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
@@ -283,7 +283,7 @@ class JobPostedOneWeeksAgo(DecryptionMixin, generics.ListAPIView):
         return Job.active_jobs.filter(date_posted__gte=one_week_ago)
 
 
-class JobPostedTwoWeeksAgo(DecryptionMixin, generics.ListAPIView):
+class JobPostedTwoWeeksAgo(GenericDecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
@@ -291,7 +291,7 @@ class JobPostedTwoWeeksAgo(DecryptionMixin, generics.ListAPIView):
         return Job.active_jobs.filter(date_posted__gte=two_weeks_ago)
 
 
-class AllJobsPosted(DecryptionMixin, generics.ListAPIView):
+class AllJobsPosted(GenericDecryptionMixin, generics.ListAPIView):
     serializer_class = JobPostedAgoSerializer
 
     def get_queryset(self):
