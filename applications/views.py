@@ -126,7 +126,7 @@ class SetShortlistedApplicationAPIView(ObjectMixin, GenericAPIView):
                 application_status = ApplicationStatus.objects.create(
                     application=application,
                     status="shortlisted",
-                    activity="Shortlisted for Assessment",
+                    activity="Shortlisted",
                     details="After reviewing all applications, yours was shortlisted"
                 )
             except IntegrityError:
@@ -463,12 +463,15 @@ class PendingApplicationListAPIView(ListAPIView):
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
-    # queryset = Application.active_objects.filter(
-    #     status='shortlisted'
-    # )
-    queryset = ApplicationStatus.objects.filter(
+    queryset = Application.active_objects.filter(
         status='shortlisted'
     )
+    # queryset = Application.active_objects.filter(
+    #     application_status__status__='shortlisted'
+    # )
+    # queryset = ApplicationStatus.objects.filter(
+    #     status='shortlisted'
+    # )
     serializer_class = ApplicationSerializer
 
 
