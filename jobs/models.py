@@ -85,10 +85,6 @@ class Courses(models.Model):
             return f"Inactive"
         return f"Active"
 
-    @property
-    def total_applications(self):
-        return self.jobs.applications.count()
-
 
 class Cohort(models.Model):
     name = models.CharField(max_length=250, unique=True)
@@ -153,6 +149,14 @@ class Job(models.Model):
 
     def application_url(self):
         return reverse('job:applications', args=[self.id])
+
+    @property
+    def total_applications(self):
+        return self.applications.count()
+
+    @property
+    def course_name(self):
+        return self.course.title
 
 
 @receiver(pre_save, sender=Job)
