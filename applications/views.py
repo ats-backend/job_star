@@ -1,6 +1,9 @@
 import json
+from datetime import timedelta
 
 from django.db import IntegrityError
+from django.db.models import Count
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
@@ -19,16 +22,18 @@ from helpers.utils import (
 )
 from job_star.encryption import encrypt_data, decrypt_data
 # from parsers.parsers import CustomJSONParser
+from jobs.models import Courses, Job
 from permissions.permissions import IsAdminOrAssessmentFrontendAuthenticated, IsAdminAuthenticated
 
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
     ApplicationSerializer, TrackApplicationSerializer,
-    ApplicationStatusSerializer, ApplicantListSerializer,
-    ApplicationEmailListSerializer, ApplicationEmailDetailSerializer,
+    TrackApplicationStatusSerializer, ApplicantListSerializer,
+    ApplicationEmailListSerializer, ApplicationEmailDetailSerializer, OneWeekApplicationDataSerializer,
 )
 from renderers.renderers import CustomRender
+
 
 # Create your views here.
 
@@ -205,11 +210,21 @@ class SetInvitedForAssessmentAPIView(ObjectMixin, GenericAPIView):
                     application=application
                 ).first()
                 if latest_status.status.lower() != "invited for assessment":
-                    return Response(
-                        data=f"Application status cannot be changed"
-                             f" to invited for assessment after {latest_status.status}",
-                        status=status.HTTP_400_BAD_REQUEST
+                    number_of_rejected = ApplicationStatus.objects.filter(
+                        application=application,
+                        status='rejected'
+                    ).count()
+                    application_status = ApplicationStatus.objects.create(
+                        application=application,
+                        status="invited for assessment",
+                        activity=f"Invited for Assessment {number_of_rejected + 1}",
+                        details="After reviewing all applications, you've been invited to take assessment"
                     )
+                    data = {
+                        'application_status': application_status.status
+                    }
+                    send_assessment_to_applicant(application)
+                    return Response(data=data, status=status.HTTP_200_OK)
                 return Response(
                     data="Application status is already set to invited for assessment",
                     status=status.HTTP_400_BAD_REQUEST
@@ -253,11 +268,11 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application_status = ApplicationStatus.objects.create(
                         application=application,
                         status="accepted",
-                        activity=f"Accepted Application {number_of_accepted_time+1}",
+                        activity=f"Accepted Application {number_of_accepted_time + 1}",
                         details="We are pleased to inform you that you have "
-                            "been selected for the AFEX TECH STARS. More "
-                            "details on this will be sent to you by mail. "
-                            "Congratulations."
+                                "been selected for the AFEX TECH STARS. More "
+                                "details on this will be sent to you by mail. "
+                                "Congratulations."
                     )
                     data = {
                         'application_status': application_status.status
@@ -271,6 +286,7 @@ class SetAcceptedApplicationAPIView(ObjectMixin, GenericAPIView):
             data = {
                 'application_status': application_status.status
             }
+            send_application_accepted_mail(application.applicant)
             return Response(data=data, status=status.HTTP_200_OK)
         return Response(
             data="No such application exists!",
@@ -306,7 +322,7 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
                     application_status = ApplicationStatus.objects.create(
                         application=application,
                         status="rejected",
-                        activity=f"Rejected Application {number_of_rejected+1}",
+                        activity=f"Rejected Application {number_of_rejected + 1}",
                         details="After reviewing your application,"
                                 " we are sorry to inform you that we will "
                                 "not be proceeding with your application. "
@@ -315,6 +331,7 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
                     data = {
                         'application_status': application_status.status
                     }
+                    send_application_rejected_mail(application.applicant)
                     return Response(data=data, status=status.HTTP_200_OK)
                 return Response(
                     data=f"Application status is already set to rejected",
@@ -331,60 +348,109 @@ class SetRejectedApplicationAPIView(ObjectMixin, GenericAPIView):
         )
 
 
-class SetPassedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.active_objects.all()
+class SetPassedApplicationTestAPIView(CustomDecryptionMixin, GenericAPIView):
 
     def post(self, request, *args, **kwargs):
-        application = self.get_object()
-        if application:
+        # req = super(SetPassedApplicationTestAPIView, self).post(request, *args, **kwargs)
+        try:
+            dec_data = decrypt_data(request.data['data'])
+            request._full_data = dec_data
+        except KeyError:
+            # request_data = request.data
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data.get('application_id'):
             try:
-                application_status = ApplicationStatus.objects.create(
-                    application=application,
-                    status="passed",
-                    activity="Passed Assessment",
-                    details="You have passed your assessment and will "
-                            "receive a mail when there is an update"
+                application = Application.objects.get(
+                    application_id__iexact=request.data['application_id']
                 )
-            except IntegrityError:
+                try:
+                    application_status = ApplicationStatus.objects.create(
+                        application=application,
+                        status="passed",
+                        activity="Passed Assessment",
+                        details="You have passed your assessment and will "
+                                "receive a mail when there is an update"
+                    )
+                    data = {
+                        'application_status': application_status.status
+                    }
+                    return Response(data=data, status=status.HTTP_200_OK)
+                except IntegrityError:
+                    return Response(
+                        data="Application status is already set to passed",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except:
                 return Response(
-                    data="Application status is already set to passed",
-                    status=status.HTTP_400_BAD_REQUEST
+                    data="No such application exists",
+                    status=status.HTTP_404_NOT_FOUND
                 )
-            data = {
-                'application_status': application_status.status
-            }
-            return Response(data=data, status=status.HTTP_200_OK)
+        data = {
+            'application_id': "This field is required"
+        }
         return Response(
-            data="No such application exists!",
+            data=data,
             status=status.HTTP_404_NOT_FOUND
         )
 
 
-class SetFailedApplicationTestAPIView(ObjectMixin, GenericAPIView):
-    queryset = Application.active_objects.all()
+class SetFailedApplicationTestAPIView(CustomDecryptionMixin, GenericAPIView):
 
     def post(self, request, *args, **kwargs):
-        application = self.get_object()
-        if application:
+        try:
+            super(SetFailedApplicationTestAPIView, self).post(request, *args, **kwargs)
+        except KeyError:
+            return Response(
+                data="Got a plain data instead of encrypted data",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # request_data = request.data
+            return Response(
+                data=f"Invalid encryption: {e}",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data.get('application_id'):
             try:
-                application_status = ApplicationStatus.objects.create(
-                    application=application,
-                    status="failed",
-                    activity="Failed Assessment",
-                    details="You have failed your assessment and will "
-                            "receive a mail when there is an update"
+                application = Application.objects.get(
+                    application_id__iexact=request.data['application_id']
                 )
-            except IntegrityError:
+                try:
+                    application_status = ApplicationStatus.objects.create(
+                        application=application,
+                        status="passed",
+                        activity="Failed Assessment",
+                        details="You have failed your assessment and will "
+                                "receive a mail when there is an update"
+                    )
+                    data = {
+                        'application_status': application_status.status
+                    }
+                    return Response(data=data, status=status.HTTP_200_OK)
+                except IntegrityError:
+                    return Response(
+                        data="Application status is already set to failed",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except:
                 return Response(
-                    data="Application status is already set to failed",
-                    status=status.HTTP_400_BAD_REQUEST
+                    data="No such application exists",
+                    status=status.HTTP_404_NOT_FOUND
                 )
-            data = {
-                'application_status': application_status.status
-            }
-            return Response(data=data, status=status.HTTP_200_OK)
+        data = {
+            'application_id': "This field is required"
+        }
         return Response(
-            data="No such application exists!",
+            data=data,
             status=status.HTTP_404_NOT_FOUND
         )
 
@@ -397,7 +463,10 @@ class PendingApplicationListAPIView(ListAPIView):
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
-    queryset = Application.active_objects.filter(
+    # queryset = Application.active_objects.filter(
+    #     status='shortlisted'
+    # )
+    queryset = ApplicationStatus.objects.filter(
         status='shortlisted'
     )
     serializer_class = ApplicationSerializer
@@ -455,7 +524,7 @@ class TrackApplicationAPIView(CustomDecryptionMixin, GenericAPIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
             queryset = ApplicationStatus.objects.filter(application=application)
-            serializer = ApplicationStatusSerializer(queryset, many=True)
+            serializer = TrackApplicationStatusSerializer(queryset, many=True)
             data = {
                 'applicant_name': application.applicant.fullname(),
                 'application_id': application.application_id,
@@ -625,3 +694,17 @@ class SendAssessmentToApplicantAPIView(GenericAPIView):
         application = self.get_object()
         send_assessment_to_applicant(application)
         return Response(data="Assessment sent successfully")
+
+
+class OneWeekApplicationDataAPIView(ListAPIView):
+    serializer_class = OneWeekApplicationDataSerializer
+
+    def get_queryset(self):
+        one_week_ago = timezone.now() - timedelta(days=14)
+        print(one_week_ago)
+        queryset = Job.active_jobs.annotate(
+            total_application=Count('applications')
+        ).filter(
+            applications__timestamp__gte=one_week_ago, total_application__gt=0
+        ).order_by('course__title')
+        return queryset

@@ -7,7 +7,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.validators import UniqueTogetherValidator
 
 from helpers.utils import send_application_success_mail
-from jobs.models import Job, Cohort
+from jobs.models import Job, Cohort, Courses
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
 
 
@@ -180,7 +180,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             details="You have completed your application and "
                     "will receive a mail when there is an update"
         )
-        send_application_success_mail(application.applicant)
+        send_application_success_mail(application)
         return application
 
 
@@ -201,7 +201,7 @@ class TrackApplicationSerializer(serializers.Serializer):
     application_id = serializers.CharField()
 
 
-class ApplicationStatusSerializer(serializers.ModelSerializer):
+class TrackApplicationStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicationStatus
@@ -247,3 +247,10 @@ class ApplicationEmailDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicationEmail
         exclude = ('id',)
+
+
+class OneWeekApplicationDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = ('course_name', 'total_applications')

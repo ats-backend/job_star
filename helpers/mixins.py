@@ -52,15 +52,7 @@ class CustomDecryptionMixin:
             request._full_data = dec_data
         except KeyError:
             # request_data = request.data
-            return Response(
-                data="Got a plain data instead of encrypted data",
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            raise KeyError
         except Exception as e:
             # request_data = request.data
-            return Response(
-                data=f"Invalid encryption: {e}",
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return self.post(request, *args, **kwargs)
+            raise e
