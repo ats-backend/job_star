@@ -85,6 +85,10 @@ class Courses(models.Model):
             return f"Inactive"
         return f"Active"
 
+    @property
+    def total_applications(self):
+        return self.job.applications.count()
+
 
 class Cohort(models.Model):
     name = models.CharField(max_length=250, unique=True)
