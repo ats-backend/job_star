@@ -87,7 +87,7 @@ class Courses(models.Model):
 
     @property
     def total_applications(self):
-        return self.job.applications.count()
+        return self.jobs.applications.count()
 
 
 class Cohort(models.Model):
