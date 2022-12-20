@@ -12,7 +12,8 @@ from .views import (
     DeleteApplicationAPIView, DeleteApplicantAPIView, DeleteEmailTemplateAPIView,
     ApplicationEmailTemplateDetailAPIView, DeletedApplicationAPIView,
     DeletedApplicantAPIView, DeletedEmailTemplateAPIView, SendAssessmentToApplicantAPIView,
-    ApplicationEmailTemplateEditAPIView, SetInvitedForAssessmentAPIView, OneWeekApplicationDataAPIView
+    ApplicationEmailTemplateEditAPIView, SetInvitedForAssessmentAPIView, OneWeekApplicationDataAPIView,
+    AllTimeApplicationDataAPIView
 )
 
 app_name = 'applications'
@@ -54,5 +55,8 @@ urlpatterns = [
 
     path('<int:pk>/send-assessment', SendAssessmentToApplicantAPIView.as_view(), name='send_assessment'),
 
-    path('one-week-ago', OneWeekApplicationDataAPIView.as_view(), name='one-week-application'),
+    path('cohort/<int:pk>/7-days-ago', OneWeekApplicationDataAPIView.as_view(), name='one-week-applications'),
+    path('cohort/<int:pk>/14-days-ago', OneWeekApplicationDataAPIView.as_view(), name='two-weeks-applications'),
+    path('cohort/<int:pk>/30-days-ago', OneWeekApplicationDataAPIView.as_view(), name='one-month-applications'),
+    path('cohort/<int:pk>/all-time', AllTimeApplicationDataAPIView.as_view(), name='all-applications'),
 ]
