@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from phonenumber_field.modelfields import PhoneNumberField
+from rest_framework.reverse import reverse
 
 from jobs.models import Job
 
@@ -153,7 +154,7 @@ class ApplicationStatus(models.Model):
     application = models.ForeignKey(
         Application,
         on_delete=models.CASCADE,
-        related_name='application_status'
+        related_name='application_status',
     )
     status = models.CharField(
         max_length=30,
@@ -166,6 +167,26 @@ class ApplicationStatus(models.Model):
     class Meta:
         ordering = ('-timestamp',)
         unique_together = ('application', 'status', 'activity',)
+
+    @property
+    def application__id(self):
+        return self.application.application_id
+
+    @property
+    def applicant_name(self):
+        return self.application.applicant_name()
+
+    @property
+    def applicant_email(self):
+        return self.application.applicant.email
+
+    @property
+    def applicant_phone(self):
+        return self.application.applicant_phone()
+
+    @property
+    def course(self):
+        return self.application.course
 
 
 @receiver(post_save, sender=ApplicationStatus)
