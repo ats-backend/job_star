@@ -1,8 +1,6 @@
 from uuid import uuid4
 from ckeditor.fields import RichTextField
 
-from datetime import datetime
-from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
