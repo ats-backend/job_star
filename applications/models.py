@@ -199,7 +199,7 @@ class ApplicationEmail(models.Model):
     last_modified = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
-    active_objects = ActiveObject()
+    active_objects = ActiveObject(  )
     deleted_objects = DeletedObject()
 
     objects = models.Manager()
