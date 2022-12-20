@@ -31,6 +31,7 @@ from .serializers import (
     ApplicationSerializer, TrackApplicationSerializer,
     TrackApplicationStatusSerializer, ApplicantListSerializer,
     ApplicationEmailListSerializer, ApplicationEmailDetailSerializer, OneWeekApplicationDataSerializer,
+    ApplicationStatusSerializer,
 )
 from renderers.renderers import CustomRender
 
@@ -455,16 +456,16 @@ class PendingApplicationListAPIView(ListAPIView):
 
 
 class ShortlistedApplicationListAPIView(ListAPIView):
-    queryset = Application.active_objects.filter(
-        status='shortlisted'
-    )
+    # queryset = Application.active_objects.filter(
+    #     status='shortlisted'
+    # )
     # queryset = Application.active_objects.filter(
     #     application_status__status__='shortlisted'
     # )
-    # queryset = ApplicationStatus.objects.filter(
-    #     status='shortlisted'
-    # )
-    serializer_class = ApplicationSerializer
+    queryset = ApplicationStatus.objects.filter(
+        status='shortlisted'
+    )
+    serializer_class = ApplicationStatusSerializer
 
 
 class InvitedApplicationListAPIView(ListAPIView):

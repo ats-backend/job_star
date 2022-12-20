@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.baseconv import base64
 from rest_framework import serializers
 from rest_framework.parsers import JSONParser
+from rest_framework.reverse import reverse
 from rest_framework.validators import UniqueTogetherValidator
 
 from helpers.utils import send_application_success_mail
@@ -254,3 +255,28 @@ class OneWeekApplicationDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ('course_name', 'total_applications')
+
+
+class ApplicationStatusSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = ApplicationStatus
+        fields = (
+            'applicant_name',
+            'applicant_email',
+            'applicant_phone',
+            'application__id',
+            'course',
+            'status',
+            'url',
+        )
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        return reverse(
+            'applications:application_detail',
+            args=[obj.application_id],
+            request=request
+        )
+
