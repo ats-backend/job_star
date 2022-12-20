@@ -2,7 +2,8 @@ import json
 from datetime import timedelta
 
 from django.db import IntegrityError
-from django.db.models import Count
+from django.db.models import Count, Subquery, OuterRef, IntegerField, Q
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -22,7 +23,7 @@ from helpers.utils import (
 )
 from job_star.encryption import encrypt_data, decrypt_data
 # from parsers.parsers import CustomJSONParser
-from jobs.models import Courses, Job
+from jobs.models import Courses, Job, Cohort
 from permissions.permissions import IsAdminOrAssessmentFrontendAuthenticated, IsAdminAuthenticated
 
 from .models import Applicant, Application, ApplicationStatus, ApplicationEmail
@@ -30,7 +31,7 @@ from .serializers import (
     ApplicantSerializer, ApplicationDetailSerializer,
     ApplicationSerializer, TrackApplicationSerializer,
     TrackApplicationStatusSerializer, ApplicantListSerializer,
-    ApplicationEmailListSerializer, ApplicationEmailDetailSerializer, OneWeekApplicationDataSerializer,
+    ApplicationEmailListSerializer, ApplicationEmailDetailSerializer, ApplicationChartDataSerializer,
     ApplicationStatusSerializer,
 )
 from renderers.renderers import CustomRender
@@ -420,7 +421,7 @@ class SetFailedApplicationTestAPIView(CustomDecryptionMixin, GenericAPIView):
                 try:
                     application_status = ApplicationStatus.objects.create(
                         application=application,
-                        status="passed",
+                        status="failed",
                         activity="Failed Assessment",
                         details="You have failed your assessment and will "
                                 "receive a mail when there is an update"
@@ -692,15 +693,93 @@ class SendAssessmentToApplicantAPIView(GenericAPIView):
         return Response(data="Assessment sent successfully")
 
 
-class OneWeekApplicationDataAPIView(ListAPIView):
-    serializer_class = OneWeekApplicationDataSerializer
+class OneWeekApplicationDataAPIView(GenericAPIView):
+    serializer_class = ApplicationChartDataSerializer
 
-    def get_queryset(self):
-        one_week_ago = timezone.now() - timedelta(days=14)
-        print(one_week_ago)
-        queryset = Job.active_jobs.annotate(
-            total_application=Count('applications')
-        ).filter(
-            applications__timestamp__gte=one_week_ago, total_application__gt=0
-        ).order_by('course__title')
+    @property
+    def get_days_ago(self):
+        path = self.request.path
+        if '7-days-ago' in path:
+            return 7
+        elif '14-days-ago' in path:
+            return 14
+        elif '30-days-ago' in path:
+            return 30
+
+    def get_queryset(self, cohort):
+        one_week_ago = timezone.now() - timedelta(days=self.get_days_ago)
+        queryset = Courses.active_courses.filter(cohort=cohort).annotate(
+            total_application=Coalesce(Subquery(
+                Job.active_jobs.filter(
+                    course=OuterRef('pk'),
+                    applications__timestamp__gte=one_week_ago
+                ).annotate(
+                    number_of_application=Count('pk')
+                ).values('number_of_application'),
+                output_field=IntegerField()
+            ), 0)
+        ).annotate(
+            total_assessment_taken=Coalesce(Subquery(
+                Job.active_jobs.filter(
+                    Q (course=OuterRef('pk')) &
+                    Q (applications__timestamp__gte=one_week_ago) &
+                    Q ( Q (applications__status__iexact='passed') |
+                        Q (applications__status__iexact='failed'))
+                ).annotate(
+                    number_of_application=Count('pk')
+                ).values('number_of_application'),
+                output_field=IntegerField()
+            ), 0)
+        ).order_by('total_application', 'title')
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        cohort = Cohort.objects.filter(
+            id=kwargs['pk']
+        ).first()
+        if cohort:
+            serializer = self.get_serializer(self.get_queryset(cohort), many=True)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data="No such cohort exists",
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+class AllTimeApplicationDataAPIView(GenericAPIView):
+    serializer_class = ApplicationChartDataSerializer
+
+    def get_queryset(self, cohort):
+        queryset = Courses.active_courses.filter(cohort=cohort).annotate(
+            total_application=Count('jobs__applications')
+        ).annotate(
+            total_assessment_taken=Coalesce(Subquery(
+                Job.active_jobs.filter(
+                    Q (course=OuterRef('pk')) &
+                    Q ( Q (applications__status__iexact='passed') |
+                        Q (applications__status__iexact='failed'))
+                ).annotate(
+                    number_of_application=Count('pk')
+                ).values('number_of_application'),
+                output_field=IntegerField()
+            ), 0)
+        ).order_by('total_application', 'title')
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        cohort = Cohort.objects.filter(
+            id=kwargs['pk']
+        ).first()
+        if cohort:
+            serializer = self.get_serializer(self.get_queryset(cohort), many=True)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data="No such cohort exists",
+            status=status.HTTP_404_NOT_FOUND
+        )
