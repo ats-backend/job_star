@@ -251,13 +251,13 @@ class ApplicationEmailDetailSerializer(serializers.ModelSerializer):
 
 
 class ApplicationChartDataSerializer(serializers.ModelSerializer):
-    total_application = serializers.IntegerField()
-    total_assessment_taken = serializers.IntegerField()
+    total_applications = serializers.IntegerField()
+    total_assessments_taken = serializers.IntegerField()
     course = serializers.SerializerMethodField()
 
     class Meta:
         model = Job
-        fields = ('course', 'total_application', 'total_assessment_taken',)
+        fields = ('course', 'total_applications', 'total_assessments_taken',)
 
     def get_course(self, obj):
         return obj.title

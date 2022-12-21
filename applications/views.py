@@ -708,29 +708,29 @@ class OneWeekApplicationDataAPIView(GenericAPIView):
 
     def get_queryset(self, cohort):
         one_week_ago = timezone.now() - timedelta(days=self.get_days_ago)
-        queryset = Courses.active_courses.filter(cohort=cohort).annotate(
-            total_application=Coalesce(Subquery(
+        queryset = Courses.active_courses.filter(cohort=cohort).annotate(# Application.objects.filter(job__course_id=OuterRef('pk')
+            total_applications=Coalesce(Subquery(
                 Job.active_jobs.filter(
                     course=OuterRef('pk'),
                     applications__timestamp__gte=one_week_ago
                 ).annotate(
-                    number_of_application=Count('pk')
-                ).values('number_of_application'),
+                    number_of_applications=Count('applications')
+                ).values('number_of_applications'),
                 output_field=IntegerField()
             ), 0)
         ).annotate(
-            total_assessment_taken=Coalesce(Subquery(
+            total_assessments_taken=Coalesce(Subquery(
                 Job.active_jobs.filter(
                     Q (course=OuterRef('pk')) &
                     Q (applications__timestamp__gte=one_week_ago) &
                     Q ( Q (applications__status__iexact='passed') |
                         Q (applications__status__iexact='failed'))
                 ).annotate(
-                    number_of_application=Count('pk')
-                ).values('number_of_application'),
+                    number_of_applications=Count('applications')
+                ).values('number_of_applications'),
                 output_field=IntegerField()
             ), 0)
-        ).order_by('total_application', 'title')
+        ).order_by('total_applications', 'title')
         return queryset
 
     def get(self, request, *args, **kwargs):
@@ -754,19 +754,19 @@ class AllTimeApplicationDataAPIView(GenericAPIView):
 
     def get_queryset(self, cohort):
         queryset = Courses.active_courses.filter(cohort=cohort).annotate(
-            total_application=Count('jobs__applications')
+            total_applications=Count('jobs__applications')
         ).annotate(
-            total_assessment_taken=Coalesce(Subquery(
+            total_assessments_taken=Coalesce(Subquery(
                 Job.active_jobs.filter(
                     Q (course=OuterRef('pk')) &
                     Q ( Q (applications__status__iexact='passed') |
                         Q (applications__status__iexact='failed'))
                 ).annotate(
-                    number_of_application=Count('pk')
-                ).values('number_of_application'),
+                    number_of_applications=Count('applications')
+                ).values('number_of_applications'),
                 output_field=IntegerField()
             ), 0)
-        ).order_by('total_application', 'title')
+        ).order_by('total_applications', 'title')
         return queryset
 
     def get(self, request, *args, **kwargs):
