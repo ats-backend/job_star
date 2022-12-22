@@ -11,7 +11,7 @@ from .views import (CourseDetailAPIView,
                     CohortListOnlyAPIView,CourseListOnlyAPIView,
                     AdminCourseListAPIView, JobPostedToday,
                     JobPostedOneWeeksAgo, JobPostedTwoWeeksAgo,
-                    AllJobsPosted,
+                    AllJobsPosted, AllInactiveJobAPIView
                     )
 
 from applications.views import ApplicationListAPIView
@@ -47,4 +47,5 @@ urlpatterns = [
     path('a-week-ago', JobPostedOneWeeksAgo.as_view(), name='two-week-ago'),
     path('two-weeks-ago', JobPostedTwoWeeksAgo.as_view(), name='three-weeks-ago'),
     path('all-time', AllJobsPosted.as_view(), name='one-month-ago'),
+    path('inactive-jobs', AllInactiveJobAPIView.as_view(), name='inactive-job')
 ]

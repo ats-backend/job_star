@@ -296,3 +296,8 @@ class AllJobsPosted(GenericDecryptionMixin, generics.ListAPIView):
 
     def get_queryset(self):
         return Job.active_jobs.all()
+
+
+class AllInactiveJobAPIView(generics.ListAPIView):
+    serializer_class = JobSerializers
+    queryset = Job.objects.filter(is_deleted=True)
