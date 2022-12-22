@@ -35,7 +35,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 
 
 
-class CoursesCreationAPIView(GenericDecryptionMixin, generics.CreateAPIView):
+class CoursesCreationAPIView(generics.CreateAPIView):
     serializer_class = CoursesCreateSerializers
     queryset = Courses.objects.all()
     parser_classes = (MultiPartParser, JSONParser)
